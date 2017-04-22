@@ -74,7 +74,6 @@ angular.module("app", [])
             });
             // from now user can start sending messages
         } else if (json.type === 'message') { // it's a single message
-            input.removeAttr('disabled'); // let the user write another message
             addMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time));
         } else {
@@ -87,9 +86,10 @@ angular.module("app", [])
         to the server.
     */
     function handleConnected(data) {        
+        toggleScreens();
         // Toggle the screens (hide the name input, show the chat screen)
         swal("Connected", "", "success");
-        toggleScreens();
+        
     }
 
     /**
@@ -163,13 +163,18 @@ angular.module("app", [])
 
     /** This is the scope function that is called when a users hits send. */
     $scope.sendMessage = function sendMessage(msg) {
-        // Create a variable for our message (append their message to their name).
         if (!msg) {
             return;
         }
-        var nameAndMsg = $scope.userName + ": " + msg;
-        // Send the data to our WebSocket connection.
-        ws.send({'type_message': 2 , 'message_content' : {'message' : nameAndMsg }});
+        // send the message as an ordinary text
+        ws.send(msg);
+        // disable the input field to make the user wait until server
+        // sends back response
+
+        // we know that the first message sent from a user their name
+        if ($scope.userName === false) {
+            $scope.userName = msg;
+        }
     };
 
     $scope.logout = function logout() {
