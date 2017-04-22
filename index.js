@@ -1,41 +1,98 @@
-var WebSocketServer = require("ws").Server
-var http = require("http")
-var express = require("express")
-var app = express()
-var port = process.env.PORT || 5000
+var WebSocketServer = require("ws").Server;
+var http = require("http");
+var express = require("express");
+var app = express();
+var port = process.env.PORT || 5000;
 
-app.use(express.static(__dirname + "/"))
+const CONNECT_MESSAGE = 0;
+const DISCONNECT_MESSAGE = 1;
+const SIMPLE_MESSAGE = 2;
+const PRIVATE_MESSAGE = 3;
 
-var server = http.createServer(app)
-server.listen(port)
+var clients = [ ];
 
-console.log("http server listening on %d", port)
+// Array with some colors
+var colors = [ 'red', 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
+// ... in random order
+colors.sort(function(a,b) { return Math.random() > 0.5; } );
 
-var wss = new WebSocketServer({server: server})
+app.use(express.static(__dirname + "/"));
+
+var server = http.createServer(app);
+server.listen(port);
+
+console.log("http server listening on %d", port);
+
+var wss = new WebSocketServer({server: server});
 console.log("websocket server created");
 
 // Create a "broadcast" function on our WebSocketServer object.
 // The function will take a "msg" paramter. When called, it will
 // loop through all the connected clients and send them the msg.
-wss.broadcast = function broadcastMsg(msg) {
+/*wss.broadcast = function broadcastMsg(msg) {
     wss.clients.forEach(function each(client) {
         client.send(msg);
     });
-};
+};*/
 
-// Create a listener function for the "connection" event.
-// Each time we get a connection, the following function
-// is called.
-wss.on('connection', function connection(ws) {
+wss.on('request', function(request) {
+    console.log((new Date()) + ' Connection from origin ' + request.origin + '.');
+    var connection = request.accept(null, request.origin); 
+    // we need to know client index to remove them on 'close' event
+    var index = clients.push(connection) - 1;
 
-    // Store the remote systems IP address as "remoteIp".
-    var remoteIp = ws.upgradeReq.connection.remoteAddress;
+// user sent some message
+    connection.on('message', function(message) {
+        if (message.type === 'utf8') { // accept only text
+            if (userName === false) { // first message sent by user is their name
+                // remember user name
+                userName = htmlEntities(message.utf8Data);
+                // get random color and send it back to the user
+                userColor = colors.shift();
+                connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
+                console.log((new Date()) + ' User is known as: ' + userName
+                            + ' with ' + userColor + ' color.');
 
-    // Print a log with the IP of the client that connected.
-    console.log('Connection received: ', remoteIp);
+            } else { // log and broadcast the message
+                console.log((new Date()) + ' Received Message from '
+                            + userName + ': ' + message.utf8Data);
+                
+                // we want to keep history of all sent messages
+                var obj = {
+                    time: (new Date()).getTime(),
+                    text: htmlEntities(message.utf8Data),
+                    author: userName,
+                    color: userColor
+                };
 
-    // Add a listener which listens for the "message" event.
-    // When a "message" event is received, take the contents
-    // of the message and pass it to the broadcast() function.
-    ws.on('message', wss.broadcast);
+                // broadcast message to all connected clients
+                var json = JSON.stringify({ type:'message', data: obj });
+                for (var i=0; i < clients.length; i++) {
+                    clients[i].sendUTF(json);
+                }
+            }
+        }
+    });
+
+    // user disconnected
+    connection.on('close', function(connection) {
+        if (userName !== false && userColor !== false) {
+            console.log((new Date()) + " Peer "
+                + connection.remoteAddress + " disconnected.");
+            // remove user from the list of connected clients
+            clients.splice(index, 1);
+            // push back user's color to be reused by another user
+            colors.push(userColor);
+        }
+    });
+
 });
+
+
+/**
+ * Helper function for escaping input strings
+ */
+function htmlEntities(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}

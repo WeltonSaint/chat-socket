@@ -24,6 +24,9 @@
         <nav>   
           <div class="nav-wrapper teal lighten-2">
             <a href="#" class="brand-logo center">Chat Client App</a>
+            <ul class="right" ng-show="showLogout">
+              <li><a href="#" ng-click="logout"><i class="material-icons">input</i></a></li>
+            </ul>
           </div>
         </nav>  
       </div>          
@@ -51,13 +54,7 @@
           </span> 
           <div class="row">
             <div class="row">
-              <textarea
-                id="messageLog"
-                ng-model="messageLog"
-                style="resize: none;"
-                rows="10"
-                readonly>
-              </textarea>
+              <div id="content"></div>
             </div>
             <div class="row">
               <div class="input-field col s10">

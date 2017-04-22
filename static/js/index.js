@@ -16,6 +16,7 @@ angular.module("app", [])
     // Note:
     $scope.showNameInput = true;
     $scope.showChatScreen = false;
+    $scope.showLogout = false;
 
     // Set the message lod and the name input to blank.
     $scope.messageLog = '';
@@ -37,34 +38,58 @@ angular.module("app", [])
         // Create a new WebSocket to the SERVER_URL (defined above). The empty
         // array ([]) is for the protocols, which we are not using for this
         // demo.
-        ws = new WebSocket(host);;
+        ws = new WebSocket(host);
         // Set the function to be called when a message is received.
         ws.onmessage = handleMessageReceived;
         // Set the function to be called when we have connected to the server.
         ws.onopen = handleConnected;
         // Set the function to be called when an error occurs.
         ws.onerror = handleError;
+
+        ws.onclose = handleDisconnect;
+
     }
 
     /**
         This is the function that is called when the WebSocket receives
         a message.
     */
-    function handleMessageReceived(data) {
-        // Simply call logMessage(), passing the received data.
-        logMessage(data.data);
+    function handleMessageReceived(message) {
+        // try to parse JSON message. Because we know that the server always returns
+        // JSON this should work without any problem but we should make sure that
+        // the massage is not chunked or otherwise damaged.
+        try {
+            var json = JSON.parse(message.data);
+        } catch (e) {
+            console.log('This doesn\'t look like a valid JSON: ', message.data);
+            return;
+        }
+
+        // NOTE: if you're not sure about the JSON structure
+        // check the server source code above
+        if (json.type === 'color') { // first response from the server with user's color
+            myColor = json.data;
+            $scope.$apply(function() {
+                $scope.userName.css('color', myColor);;
+            });
+            // from now user can start sending messages
+        } else if (json.type === 'message') { // it's a single message
+            input.removeAttr('disabled'); // let the user write another message
+            addMessage(json.data.author, json.data.text,
+                       json.data.color, new Date(json.data.time));
+        } else {
+            console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+        }
     }
 
     /**
         This is the function that is called when the WebSocket connects
         to the server.
     */
-    function handleConnected(data) {
-        // Create a log message which explains what has happened and includes
-        // the url we have connected too.
-        var logMsg = 'Connected to server: ' + data.target.url;
-        // Add the message to the log.
-        logMessage(logMsg)
+    function handleConnected(data) {        
+        // Toggle the screens (hide the name input, show the chat screen)
+        swal("Connected", "", "success");
+        toggleScreens();
     }
 
     /**
@@ -74,6 +99,15 @@ angular.module("app", [])
     function handleError(err) {
         // Print the error to the console so we can debug it.
         console.log("Error: ", err);
+        swal("Oops...", "Error: " + err, "error");
+    }
+
+     function handleDisconnect(data) {
+        $scope.$apply(function() {
+            $scope.messageLog = "";
+            $scope.userName = "";
+        });
+        toggleScreens();
     }
 
     /** This function adds a message to the message log. */
@@ -95,12 +129,24 @@ angular.module("app", [])
     */
     function updateScrolling() {
         // Set the ID of our message log element (textarea) in the HTML.
-        var msgLogId = '#messageLog';
+        var msgLogId = '#content';
         // Get a handle on the element using the querySelector.
         var msgLog = $document[0].querySelector(msgLogId);
         // Set the top of the scroll to the height. This makes the box scroll
         // to the bottom.
         msgLog.scrollTop = msgLog.scrollHeight;
+    }
+
+    function addMessage(author, message, color, dt) {
+        $scope.$apply(function() {
+            //Append out new message to our message log. The \n means new line.
+            $scope.content = $scope.content + '<p><span style="color:' + color + '">' + author + '</span> @ ' +
+             + (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
+             + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
+             + ': ' + message + '</p>';
+            // Update the scrolling (defined below).
+            updateScrolling();
+        });
     }
 
     /** This is our scope function that is called when the user submits their name. */
@@ -111,18 +157,23 @@ angular.module("app", [])
         }
         // Set the userName scope variable to the submitted name.
         $scope.userName = name;
-        // Call our connect() function.
+        // Call our connect() function.        
         connect();
-        // Toggle the screens (hide the name input, show the chat screen)
-        toggleScreens();
     };
 
     /** This is the scope function that is called when a users hits send. */
     $scope.sendMessage = function sendMessage(msg) {
         // Create a variable for our message (append their message to their name).
+        if (!msg) {
+            return;
+        }
         var nameAndMsg = $scope.userName + ": " + msg;
         // Send the data to our WebSocket connection.
-        ws.send(nameAndMsg);
+        ws.send({'type_message': 2 , 'message_content' : {'message' : nameAndMsg }});
+    };
+
+    $scope.logout = function logout() {
+        ws.close()
     };
 
 })
