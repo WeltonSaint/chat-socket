@@ -1,4 +1,4 @@
-angular.module('chat', ['timer'])
+angular.module("app", [])
 .controller('MainCtrl', function($scope, $document) {
 
     // Output to the log so we know when our controller is loaded.
