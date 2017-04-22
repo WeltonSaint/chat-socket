@@ -1,22 +1,18 @@
 {
-  "name": "tutorial-multi-chat-server",
-  "version": "1.0.0",
-  "description": "Multi client chat server.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "name": "node-ws-test",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LondonAppDev/tutorial-multi-chat-server.git"
+    "url": "https://github.com/heroku-examples/node-ws-test.git"
   },
-  "author": "Mark Winterbottom",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/LondonAppDev/tutorial-multi-chat-server/issues"
-  },
-  "homepage": "https://github.com/LondonAppDev/tutorial-multi-chat-server#readme",
   "dependencies": {
-    "ws": "^1.1.1"
+    "express": "^4.4.5",
+    "ws": "0.4.x"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }

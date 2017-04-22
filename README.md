@@ -1,6 +1,18 @@
-# WebSocket Multi-Client Chat Server #
+# Node.js Websocket Test
 
-This is the server code for my tutorial on [How to Build a WebSocket Multi-Client Chat using Ionic and Node.JS](https://www.londonappdeveloper.com/how-to-build-a-websocket-multi-client-chat-using-ionic-and-node-js/).
+A tiny demo using the [einaros/ws](http://einaros.github.io/ws/) WebSockets implementation.
 
-The client side code can be found here:
-https://github.com/LondonAppDev/tutorial-multi-chat-client
+# Running Locally
+
+``` bash
+npm install
+npm start
+```
+
+# Running on Heroku
+
+``` bash
+heroku create
+git push heroku master
+heroku open
+```
