@@ -25,7 +25,7 @@
           <div class="nav-wrapper teal lighten-2">
             <a href="#" class="brand-logo center">Chat Client App</a>
             <ul class="right" ng-show="showLogout">
-              <li><a href="#" ng-click="logout"><i class="material-icons">input</i></a></li>
+              <li><a href="#" onclick="logout()"><i class="material-icons" >input</i></a></li>
             </ul>
           </div>
         </nav>  
@@ -54,7 +54,8 @@
           </span> 
           <div class="row">
             <div class="row">
-              <div id="content"></div>
+              <div id="content" class="col s9" ng-model="content"></div>
+              <div id="listUser" class="collection col s3" ng-model="listUser"></div>
             </div>
             <div class="row">
               <div class="input-field col s10">

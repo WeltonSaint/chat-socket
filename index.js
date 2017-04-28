@@ -9,8 +9,8 @@ const DISCONNECT_MESSAGE = 1;
 const SIMPLE_MESSAGE = 2;
 const PRIVATE_MESSAGE = 3;
 
-var clients = [ ];
-
+var users = new Map();
+var idCounter = 0;
 // Array with some colors
 var colors = [ 'red', 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
 // ... in random order
@@ -26,73 +26,98 @@ console.log("http server listening on %d", port);
 var wss = new WebSocketServer({server: server});
 console.log("websocket server created");
 
-// Create a "broadcast" function on our WebSocketServer object.
-// The function will take a "msg" paramter. When called, it will
-// loop through all the connected clients and send them the msg.
-/*wss.broadcast = function broadcastMsg(msg) {
-    wss.clients.forEach(function each(client) {
-        client.send(msg);
-    });
-};*/
+// Create a listener function for the "connection" event.
+// Each time we get a connection, the following function
+// is called.
+wss.on('connection', function connection(ws) {
+    var connectionID = idCounter++;
+    var userName = false;
+    var userColor = false;
 
-wss.on('request', function(request) {
-    console.log((new Date()) + ' Connection from origin ' + request.origin + '.');
-    var connection = request.accept(null, request.origin); 
-    // we need to know client index to remove them on 'close' event
-    var index = clients.push(connection) - 1;
+    console.log((new Date()) + ' Connection accepted.');
 
-// user sent some message
-    connection.on('message', function(message) {
-        if (message.type === 'utf8') { // accept only text
-            if (userName === false) { // first message sent by user is their name
-                // remember user name
-                userName = htmlEntities(message.utf8Data);
-                // get random color and send it back to the user
-                userColor = colors.shift();
-                connection.sendUTF(JSON.stringify({ type:'color', data: userColor }));
-                console.log((new Date()) + ' User is known as: ' + userName
-                            + ' with ' + userColor + ' color.');
-
-            } else { // log and broadcast the message
-                console.log((new Date()) + ' Received Message from '
-                            + userName + ': ' + message.utf8Data);
-                
-                // we want to keep history of all sent messages
-                var obj = {
-                    time: (new Date()).getTime(),
-                    text: htmlEntities(message.utf8Data),
-                    author: userName,
-                    color: userColor
-                };
-
-                // broadcast message to all connected clients
-                var json = JSON.stringify({ type:'message', data: obj });
-                for (var i=0; i < clients.length; i++) {
-                    clients[i].sendUTF(json);
+    ws.on('message', function (message){
+        if (userName === false) { // first message sent by user is their name
+            // remember user name
+            userName = message;
+            // get random color and send it back to the user
+            userColor = colors.shift();
+            users.set(connectionID, {'name': userName, 'color' : userColor });            
+            ws.send(JSON.stringify({ type:'color', data: userColor, listUsers: getListUser()}));
+            // we want to keep history of all sent messages
+            var obj = {
+                time: (new Date()).getTime(),
+                text: " connected.",
+                author: userName,
+                color: userColor
+            };
+            wss.clients.forEach(function each(client) {
+                if (client !== ws ) {
+                    client.send(JSON.stringify({ type:'message', data: obj }));
                 }
-            }
+            });
+            console.log((new Date()) + ' User is known as: ' + userName
+                        + ' with ' + userColor + ' color.');
+
+        } else { // log and broadcast the message
+            console.log((new Date())+ userName + ': ' + message);
+            
+            // we want to keep history of all sent messages
+            var obj = {
+                time: (new Date()).getTime(),
+                text: message,
+                author: userName,
+                color: userColor
+            };
+            // broadcast message to all connected clients
+            var json = JSON.stringify({ type:'message', data: obj });
+            wss.clients.forEach(function each(client) {
+                client.send(json);
+            });
         }
+        
     });
 
-    // user disconnected
-    connection.on('close', function(connection) {
+    ws.on('close', function(connection) {
         if (userName !== false && userColor !== false) {
             console.log((new Date()) + " Peer "
-                + connection.remoteAddress + " disconnected.");
+                + users.get(connectionID).name + " disconnected.");
             // remove user from the list of connected clients
-            clients.splice(index, 1);
+            // we want to keep history of all sent messages
+            var obj = {
+                time: (new Date()).getTime(),
+                text: " disconnected.",
+                author: userName,
+                color: userColor
+            };
+            // broadcast message to all connected clients
+            var json = JSON.stringify({ type:'message', data: obj });
+            wss.clients.forEach(function each(client) {
+                client.send(json);
+            });
+            users.delete(connectionID);
             // push back user's color to be reused by another user
             colors.push(userColor);
         }
     });
 
+    function getListUser(){
+        var list = '';
+        users.forEach(function (item) {
+            list += item.name.toString() + ",";
+        });
+        return list;
+    }    
+
 });
 
-
-/**
- * Helper function for escaping input strings
- */
-function htmlEntities(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
 }
+
+
