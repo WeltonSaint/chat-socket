@@ -1,12 +1,12 @@
 angular.module("app", [])
 .controller('MainCtrl', function($scope, $document) {
 
-    // Output to the log so we know when our controller is loaded.
-     console.log('MainCtrl loaded.');
+    
 
     // Define the URL for our server. As we are only running it locally, we will
     // use localhost.
     var host = location.origin.replace(/^http/, 'ws')
+    var userList = {};
     var ws;
 
     // Below we set the "showNameInput" and "showChatScreen" scope variables,
@@ -17,6 +17,8 @@ angular.module("app", [])
     $scope.showNameInput = true;
     $scope.showChatScreen = false;
     $scope.showLogout = false;
+    // Output to the log so we know when our controller is loaded.
+     console.log('MainCtrl loaded.');
 
     // Set the message lod and the name input to blank.
     $scope.content = '';
@@ -77,6 +79,11 @@ angular.module("app", [])
         } else if (json.type === 'message') {      
             logMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time));
+            if(json.data.text.search('disconnected') != -1){
+                removeUser(json.data.id);
+            } else if(json.data.text.search('connected') != -1){
+                addUser(json.data.id, json.data.author);
+            }
         } else {
             console.log('Hmm..., I\'ve never seen JSON like this: ', json);
         }
@@ -135,18 +142,32 @@ angular.module("app", [])
 
 
     function populateUserList(stringList) {
-        var names = stringList.split(',');
-        names.forEach(function (item, index, arr){
-            if(item)
-                angular.element(
+        var json = JSON.parse(stringList);
+        for (var i=0;i<json.length;i++){
+            var idUser = json[i].id;                   
+            userList[json[i].name] = idUser;
+            angular.element(
                     document.getElementById('listUser'))
-                    .append('<a href="#!" class="collection-item avatar"> '
+                    .append('<a id="userID' + idUser + '" href="#!" class="collection-item avatar"> '
                         +'<i class="material-icons teal lighten-2 circle">face</i>'
-                        +'<span class="title">'+item+'</span></a>');
-        });              
+                        +'<span class="title">' + json[i].name + '</span></a>');
+        }                     
     }
 
-    $scope.logout = function logout(){
+    function removeUser(id) {
+        array.splice(id, 1);
+        document.getElementById("userID" + id).remove();
+    }
+
+    function addUser(id,name) {
+        angular.element(
+                    document.getElementById('listUser'))
+                    .append('<a id="userID' + idUser + '" href="#!" class="collection-item avatar"> '
+                        +'<i class="material-icons teal lighten-2 circle">face</i>'
+                        +'<span class="title">' + json[i].name + '</span></a>');
+    }
+
+    $scope.sendMessage = function logout(){
         swal("Success","Disconnected!", "success");
         ws.close();
         $scope.content = '';

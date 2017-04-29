@@ -24,8 +24,12 @@
         <nav>   
           <div class="nav-wrapper teal lighten-2">
             <a href="#" class="brand-logo center">Chat Client App</a>
-            <ul class="right" ng-show="showLogout">
-              <li><a href="#" onclick="logout()"><i class="material-icons" >input</i></a></li>
+            <ul  class="right">
+              <li>
+                <div ng-show="showLogout" ng-click="alert('message');">
+                  <a href="#" ><i class="material-icons" >input</i></a>
+                </div>
+              </li>
             </ul>
           </div>
         </nav>  
@@ -60,7 +64,7 @@
             <div class="row">
               <div class="input-field col s10">
                 <i class="material-icons prefix">message</i>              
-                <input type="text" id="message" ng-model="message" my-enter="sendMessage(message); message = ''">          
+                <input type="text" id="message" ng-model="message" my-enter="sendMessage(message); message = ''">         
                 <label for="message">Message</label>
               </div>
               <div class="input-field col s2">

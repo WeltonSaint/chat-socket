@@ -65,7 +65,8 @@ wss.on('connection', function connection(ws) {
             // we want to keep history of all sent messages
             var obj = {
                 time: (new Date()).getTime(),
-                text: message,
+                id : connectionID,
+                text: message,                
                 author: userName,
                 color: userColor
             };
@@ -102,10 +103,13 @@ wss.on('connection', function connection(ws) {
     });
 
     function getListUser(){
-        var list = '';
-        users.forEach(function (item) {
-            list += item.name.toString() + ",";
+        var list = '[';
+        users.forEach(function (value, key) {
+            list +=  '{"id": "' + key + '", "name" :"' + value.name.toString() + '"},';
         });
+        list = list.substring(0, list.length-1);
+        list += ']';
+        
         return list;
     }    
 
