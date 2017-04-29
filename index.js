@@ -9,7 +9,7 @@ const DISCONNECT_MESSAGE = 1;
 const SIMPLE_MESSAGE = 2;
 const PRIVATE_MESSAGE = 3;
 
-var users = new Map();
+var users = [];
 var idCounter = 0;
 // Array with some colors
 var colors = [ 'red', 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
@@ -42,7 +42,7 @@ wss.on('connection', function connection(ws) {
             userName = message;
             // get random color and send it back to the user
             userColor = colors.shift();
-            users.set(connectionID, {'name': userName, 'color' : userColor });            
+            users[connectionID] = {'name': userName, 'color' : userColor };            
             ws.send(JSON.stringify({ type:'color', data: userColor, listUsers: getListUser()}));
             // we want to keep history of all sent messages
             var obj = {
@@ -82,7 +82,7 @@ wss.on('connection', function connection(ws) {
     ws.on('close', function(connection) {
         if (userName !== false && userColor !== false) {
             console.log((new Date()) + " Peer "
-                + users.get(connectionID).name + " disconnected.");
+                + userName + " disconnected.");
             // remove user from the list of connected clients
             // we want to keep history of all sent messages
             var obj = {
@@ -96,7 +96,7 @@ wss.on('connection', function connection(ws) {
             wss.clients.forEach(function each(client) {
                 client.send(json);
             });
-            users.delete(connectionID);
+            delete users[connectionID];
             // push back user's color to be reused by another user
             colors.push(userColor);
         }

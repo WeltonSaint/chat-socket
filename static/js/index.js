@@ -80,7 +80,7 @@ angular.module("app", [])
             logMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time));
             if(json.data.text.search('disconnected') != -1){
-                removeUser(json.data.id);
+                removeUser(json.data.id, json.data.author);
             } else if(json.data.text.search('connected') != -1){
                 addUser(json.data.id, json.data.author);
             }
@@ -154,17 +154,18 @@ angular.module("app", [])
         }                     
     }
 
-    function removeUser(id) {
-        array.splice(id, 1);
+    function removeUser(id, name) {
+        delete userList[name];
         document.getElementById("userID" + id).remove();
     }
 
     function addUser(id,name) {
+        userList[name] = id ;
         angular.element(
                     document.getElementById('listUser'))
-                    .append('<a id="userID' + idUser + '" href="#!" class="collection-item avatar"> '
+                    .append('<a id="userID' + id + '" href="#!" class="collection-item avatar"> '
                         +'<i class="material-icons teal lighten-2 circle">face</i>'
-                        +'<span class="title">' + json[i].name + '</span></a>');
+                        +'<span class="title">' + name + '</span></a>');
     }
 
     $scope.sendMessage = function logout(){
