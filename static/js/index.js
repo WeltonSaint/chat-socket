@@ -156,7 +156,8 @@ angular.module("app", [])
 
     function removeUser(id, name) {
         delete userList[name];
-        document.getElementById("userID" + id).remove();
+        console.log(document.getElementById("userID_" + id));
+        document.getElementById("userID_" + id).remove();
     }
 
     function addUser(id,name) {
@@ -199,6 +200,11 @@ angular.module("app", [])
         }
         ws.send(msg);
     };
+
+    setInterval(function() {
+        ws.send("polling");
+    }, 30000);
+
 
 })
 .directive('myEnter', function () {

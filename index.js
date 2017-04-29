@@ -59,7 +59,8 @@ wss.on('connection', function connection(ws) {
             console.log((new Date()) + ' User is known as: ' + userName
                         + ' with ' + userColor + ' color.');
 
-        } else { // log and broadcast the message
+        } else if(message.localeCompare("polling") != 0){
+             // log and broadcast the message
             console.log((new Date())+ userName + ': ' + message);
             
             // we want to keep history of all sent messages
