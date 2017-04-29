@@ -47,6 +47,7 @@ wss.on('connection', function connection(ws) {
             // we want to keep history of all sent messages
             var obj = {
                 time: (new Date()).getTime(),
+                id : connectionID,
                 text: " connected.",
                 author: userName,
                 color: userColor
@@ -88,6 +89,7 @@ wss.on('connection', function connection(ws) {
             // we want to keep history of all sent messages
             var obj = {
                 time: (new Date()).getTime(),
+                id : connectionID,
                 text: " disconnected.",
                 author: userName,
                 color: userColor
