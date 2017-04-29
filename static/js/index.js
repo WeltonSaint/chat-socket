@@ -156,8 +156,7 @@ angular.module("app", [])
 
     function removeUser(id, name) {
         delete userList[name];
-        console.log(document.getElementById("userID_" + id));
-        document.getElementById("userID_" + id).remove();
+        document.getElementById("userID" + id).remove();
     }
 
     function addUser(id,name) {
