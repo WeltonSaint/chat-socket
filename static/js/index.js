@@ -1,12 +1,11 @@
 angular.module("app", [])
-.controller('MainCtrl', function($scope, $document) {
-
-    
+.controller('MainCtrl', function($scope, $document) {    
 
     // Define the URL for our server. As we are only running it locally, we will
     // use localhost.
     var host = location.origin.replace(/^http/, 'ws')
     var userList = {};
+    var connected = false;
     var ws;
 
     // Below we set the "showNameInput" and "showChatScreen" scope variables,
@@ -22,6 +21,7 @@ angular.module("app", [])
 
     // Set the message lod and the name input to blank.
     $scope.content = '';
+    $scope.contentPrivate = '';
     $scope.userName = '';
     $scope.color = false;
 
@@ -34,6 +34,7 @@ angular.module("app", [])
     function toggleScreens() {
         $scope.showNameInput = !$scope.showNameInput;
         $scope.showChatScreen = !$scope.showChatScreen;
+        $scope.showLogout = !$scope.showLogout;
     }
 
     /** This function initiates the connection to the web socket server. */
@@ -49,13 +50,19 @@ angular.module("app", [])
         // Set the function to be called when an error occurs.
         ws.onerror = handleError;
         ws.onclose = function(event) {
-            ws.close();
-            $scope.content = '';
-            $scope.userName = '';
-            $scope.showNameInput = true;
-            $scope.showChatScreen = false;
-            $scope.showLogout = false;
-            sweetAlert("Warning", "Disconnected from WebSocket!", "warning");                    
+            if(connected){
+                $scope.content = '';
+                $scope.userName = '';
+                toggleScreens();
+                cleanChat();
+                connected = false;
+                swal({
+                  title: "Warning",
+                  text: "Disconnected from WebSocket!",
+                  type: "warning",
+                  confirmButtonColor: "#4db6ac",
+                });
+            }                  
         };
     }
 
@@ -70,7 +77,6 @@ angular.module("app", [])
             console.log('This doesn\'t look like a valid JSON: ', data.data);
             return;
         }
-        console.log("json: " + json.type);
         // NOTE: if you're not sure about the JSON structure
         // check the server source code above
         if (json.type === 'color') { // first response from the server with user's color
@@ -94,7 +100,13 @@ angular.module("app", [])
         to the server.
     */
     function handleConnected(data) {        
-        swal("Success","Connected!", "success");
+        swal({
+          title: "Success",
+          text: "Connected!",
+          type: "success",
+          confirmButtonColor: "#4db6ac",
+        });
+        connected = true;   
         ws.send($scope.userName);
     }
 
@@ -116,7 +128,7 @@ angular.module("app", [])
 
         angular.element(
             document.getElementById('content'))
-            .append('<p>['
+            .append('<p class="animated fadeIn">['
          + (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
          + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
          + '] <span style="color:' + color + '">' + author + '</span>: ' + message + '</p>');
@@ -131,10 +143,8 @@ angular.module("app", [])
         would have this logic in the directive.
     */
     function updateScrolling() {
-        // Set the ID of our message log element (textarea) in the HTML.
-        var msgLogId = '#content';
         // Get a handle on the element using the querySelector.
-        var msgLog = $document[0].querySelector(msgLogId);
+        var msgLog = $document[0].querySelector('#content');
         // Set the top of the scroll to the height. This makes the box scroll
         // to the bottom.
         msgLog.scrollTop = msgLog.scrollHeight;
@@ -151,12 +161,23 @@ angular.module("app", [])
                     .append('<a id="userID' + idUser + '" href="#!" class="collection-item avatar"> '
                         +'<i class="material-icons teal lighten-2 circle">face</i>'
                         +'<span class="title">' + json[i].name + '</span></a>');
+            if(json[i].name.localeCompare($scope.userName) != 0){
+                angular.element(
+                    document.getElementById('private-chat-users'))
+                    .append('<option value="' + idUser + '"> '
+                    + json[i].name + '</option>');
+            }
         }                     
     }
 
     function removeUser(id, name) {
         delete userList[name];
         document.getElementById("userID" + id).remove();
+        var selectobject=document.getElementById("private-chat-users")
+        for (var i=0; i<selectobject.length; i++){
+            if (selectobject.options[i].value == id )
+                selectobject.remove(i);
+        }
     }
 
     function addUser(id,name) {
@@ -166,17 +187,35 @@ angular.module("app", [])
                     .append('<a id="userID' + id + '" href="#!" class="collection-item avatar"> '
                         +'<i class="material-icons teal lighten-2 circle">face</i>'
                         +'<span class="title">' + name + '</span></a>');
+        angular.element(
+                    document.getElementById('private-chat-users'))
+                    .append('<option value="' + id + '"> '
+                    + name + '</option>');
     }
 
-    $scope.sendMessage = function logout(){
-        swal("Success","Disconnected!", "success");
-        ws.close();
+    $scope.logout = function(){               
         $scope.content = '';
         $scope.userName = '';
-        $scope.showNameInput = true;
-        $scope.showChatScreen = false;
-        $scope.showLogout = false;
+        toggleScreens();
+        cleanChat();
+        connected = false;   
+        swal({
+          title: "Success",
+          text: "Disconnected!",
+          type: "success",
+          confirmButtonColor: "#4db6ac",
+        },
+        function(){
+          ws.close();;
+        });        
     };
+
+    function cleanChat() {
+        for(var item in userList) {
+            console.log(userList[item], item );
+            removeUser(userList[item], item );
+        }
+    }
 
     /** This is our scope function that is called when the user submits their name. */
     $scope.submitName = function submitName(name) {
@@ -200,8 +239,17 @@ angular.module("app", [])
         ws.send(msg);
     };
 
+    $scope.sendMessagePrivate = function(msg) {
+        if (!msg) {
+            return;
+        }
+        ws.send(msg);
+    };
+
     setInterval(function() {
-        ws.send("polling");
+        if(connected){
+            ws.send("polling");
+        }
     }, 30000);
 
 

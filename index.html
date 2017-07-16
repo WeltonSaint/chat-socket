@@ -1,8 +1,8 @@
-<html lang="pt-br" >
+<html class="no-js" lang="pt-br">
   <head>
     <script src="static/js/angular.min.js"></script>
     <title>Chat Socket</title>
-	<meta charset="utf-8">
+	  <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,14 +11,18 @@
     <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="static/js/jquery-1.11.2.min.js"></script>
     <script src="static/js/moment.min.js"></script> 
+    <script src="static/js/angular-nicescroll.js"></script>
   	<script src="static/js/materialize.min.js"></script>
+    <script src="static/js/modernizr-2.8.3-respond-1.4.2.min.js"></script>
     <script src="static/js/index.js"></script>
   	<script src="static/js/sweetalert.min.js"></script>
-  	<link rel="stylesheet" href="static/css/materialize.min.css">
+    <link rel="stylesheet" href="static/css/normalize.css">   
+  	<link rel="stylesheet" href="static/css/animate.css">
+    <link rel="stylesheet" href="static/css/materialize.min.css">
   	<link rel="stylesheet" href="static/css/sweetalert.css">
     <link rel="stylesheet" href="static/css/index.css">  	
   </head>
-  <body>
+  <body ng-controller="MainCtrl" ng-app="app">
     <header >      
       <div class="navbar-fixed">
         <nav>   
@@ -26,7 +30,7 @@
             <a href="#" class="brand-logo center">Chat Client App</a>
             <ul  class="right">
               <li>
-                <div ng-show="showLogout" ng-click="alert('message');">
+                <div ng-click="logout()" ng-show="showLogout">
                   <a href="#" ><i class="material-icons" >input</i></a>
                 </div>
               </li>
@@ -35,7 +39,7 @@
         </nav>  
       </div>          
     </header>
-    <div class="container" ng-controller="MainCtrl" ng-app="app">
+    <div class="container">
       <div ng-show="showNameInput" class="card">
         <div class="card-content">
           <span class="card-title">Enter Name</span>
@@ -51,27 +55,56 @@
           </div>
         </div>
       </div>
-      <div ng-show="showChatScreen" class="card">
+      <div ng-show="showChatScreen" class="card">        
         <div class="card-content">
-          <span class="card-title">
-            Chatting as <strong><em>{{userName}}</em></strong>
-          </span> 
-          <div class="row">
+          <ul class="tabs">
+            <li class="tab col s3"><a class="active" href="#chat">Chat</a></li>
+            <li class="tab col s3"><a href="#private-chat">Private Chat</a></li>
+          </ul>
+          <div id="chat">
+            <span class="card-title">
+              Chatting as <strong><em>{{userName}}</em></strong>
+            </span> 
             <div class="row">
-              <div id="content" class="col s9" ng-model="content"></div>
-              <div id="listUser" class="collection col s3" ng-model="listUser"></div>
-            </div>
-            <div class="row">
-              <div class="input-field col s10">
-                <i class="material-icons prefix">message</i>              
-                <input type="text" id="message" ng-model="message" my-enter="sendMessage(message); message = ''">         
-                <label for="message">Message</label>
+              <div class="row">
+                <div id="content" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" nice-scroll-top-end="topEndComplete()" nice-scroll-end="endScroll()" class="col s9" ng-model="content"></div>
+                <div id="listUser" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" nice-scroll-top-end="topEndComplete()" nice-scroll-end="endScroll()" class="collection col s3" ng-model="listUser"></div>
               </div>
-              <div class="input-field col s2">
-                <a ng-click="sendMessage(message); message = ''" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">send</i></a>
+              <div class="row">
+                <div class="input-field col s10">
+                  <i class="material-icons prefix">message</i>              
+                  <input type="text" id="message" ng-model="message" my-enter="sendMessage(message); message = ''">         
+                  <label for="message">Message</label>
+                </div>
+                <div class="input-field col s2">
+                  <a ng-click="sendMessage(message); message = ''" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">send</i></a>
+                </div>
               </div>
             </div>
-          </div>       
+          </div>
+          <div id="private-chat">
+            <span class="card-title">
+              Private Chatting with 
+              <select id="private-chat-users" class="browser-default" >
+                <option value="" disabled selected>Choose user</option>
+              </select>
+            </span>
+            <!-- <div class="row">
+              <div class="row">
+                <div id="content-private" ng-model="contentPrivate"></div>
+              </div>
+              <div class="row">
+                <div class="input-field col s10">
+                  <i class="material-icons prefix">message</i>              
+                  <input type="text" id="message-private" ng-model="message-private" my-enter="sendMessagePrivate(message-private); message-private = ''">         
+                  <label for="message-private">Message</label>
+                </div>
+                <div class="input-field col s2">
+                  <a ng-click="sendMessagePrivate(message-private); message-private = ''" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">send</i></a>
+                </div>
+              </div>
+            </div> 
+          </div> -->
         </div>
       </div> 
     </div>
