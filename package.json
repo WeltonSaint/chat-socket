@@ -7,10 +7,10 @@
   },
   "dependencies": {
     "express": "^4.4.5",
-    "ws": "0.4.x"
+    "ws": "^0.4.32"
   },
   "engines": {
-    "node": "0.10.x"
+    "node": "6.9.5"
   },
   "scripts": {
     "start": "node index.js"

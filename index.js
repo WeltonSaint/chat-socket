@@ -8,6 +8,9 @@ const CONNECT_MESSAGE = 0;
 const DISCONNECT_MESSAGE = 1;
 const SIMPLE_MESSAGE = 2;
 const PRIVATE_MESSAGE = 3;
+const POLLING = 4;
+const CONNECTION_ACCEPTED = 5;
+const CONNECTION_REFUSED = 6;
 
 var users = [];
 var idCounter = 0;
@@ -34,59 +37,73 @@ wss.on('connection', function connection(ws) {
     var userName = false;
     var userColor = false;
 
-    console.log((new Date()) + ' Connection accepted.');
+    console.log((new Date()) + ' new user connected.');
 
     ws.on('message', function (message){
-        if (userName === false) { // first message sent by user is their name
-            // remember user name
-            userName = message;
-            // get random color and send it back to the user
-            userColor = colors.shift();
-            users[connectionID] = {'name': userName, 'color' : userColor };            
-            ws.send(JSON.stringify({ type:'color', data: userColor, listUsers: getListUser()}));
-            // we want to keep history of all sent messages
-            var obj = {
-                time: (new Date()).getTime(),
-                id : connectionID,
-                text: " connected.",
-                author: userName,
-                color: userColor
-            };
-            wss.clients.forEach(function each(client) {
-                if (client !== ws ) {
-                    client.send(JSON.stringify({ type:'message', data: obj }));
+        message = JSON.parse(message);
+        switch(message.type){
+            case CONNECT_MESSAGE:
+                var userExists = false
+                for (var i = 0; i < users.length; i++) {
+                    console.log("connection", users[i].name, message.userName);
+                    if(users[i].name === message.userName){
+                        console.log((new Date()) + ' connection refused.');
+                        ws.send(JSON.stringify({ type: CONNECTION_REFUSED}));                    
+                        userExists = true;
+                        break;
+                    }
                 }
-            });
-            console.log((new Date()) + ' User is known as: ' + userName
-                        + ' with ' + userColor + ' color.');
-
-        } else if(message.localeCompare("polling") != 0){
-             // log and broadcast the message
-            console.log((new Date())+ userName + ': ' + message);
-            
-            // we want to keep history of all sent messages
-            var obj = {
-                time: (new Date()).getTime(),
-                id : connectionID,
-                text: message,                
-                author: userName,
-                color: userColor
-            };
-            // broadcast message to all connected clients
-            var json = JSON.stringify({ type:'message', data: obj });
-            wss.clients.forEach(function each(client) {
-                client.send(json);
-            });
-        }
-        
+                if(!userExists){
+                    userName = message.userName;
+                    userColor = colors.shift();
+                    users[connectionID] = {
+                        'name': userName,
+                        'color' : userColor,
+                        'socket' : ws
+                    };            
+                    ws.send(JSON.stringify({ type: CONNECTION_ACCEPTED, data: userColor, listUsers: getListUser()}));            
+                    var obj = {
+                        type: CONNECT_MESSAGE,
+                        time: (new Date()).getTime(),
+                        id : connectionID,
+                        text: " connected.",
+                        author: userName,
+                        color: userColor
+                    };
+                    wss.clients.forEach(function each(client) {
+                        if (client !== ws ) {
+                            client.send(JSON.stringify({ type: CONNECT_MESSAGE, data: obj }));
+                        }
+                    });
+                    console.log((new Date()) + ' User is known as: ' + userName
+                                + ' with ' + userColor + ' color.');
+                }
+                break;
+            case SIMPLE_MESSAGE:            
+                console.log((new Date())+ userName + ': ' + message.message);    
+                var obj = {
+                    time: (new Date()).getTime(),
+                    id : connectionID,
+                    text: message.message,                
+                    author: userName,
+                    color: userColor
+                };
+                // broadcast message to all connected clients
+                var json = JSON.stringify({ type: SIMPLE_MESSAGE, data: obj });
+                wss.clients.forEach(function each(client) {
+                    client.send(json);
+                });
+                break;
+            case PRIVATE_MESSAGE:
+                users[message.to].socket.send(JSON.stringify(message));
+                break;
+        }        
     });
 
     ws.on('close', function(connection) {
         if (userName !== false && userColor !== false) {
             console.log((new Date()) + " Peer "
                 + userName + " disconnected.");
-            // remove user from the list of connected clients
-            // we want to keep history of all sent messages
             var obj = {
                 time: (new Date()).getTime(),
                 id : connectionID,
@@ -94,13 +111,12 @@ wss.on('connection', function connection(ws) {
                 author: userName,
                 color: userColor
             };
-            // broadcast message to all connected clients
-            var json = JSON.stringify({ type:'message', data: obj });
+            var json = JSON.stringify({ type: DISCONNECT_MESSAGE, data: obj });
             wss.clients.forEach(function each(client) {
                 client.send(json);
             });
-            delete users[connectionID];
-            // push back user's color to be reused by another user
+            console.log(users[connectionID].name);
+            users.splice(connectionID, 1);
             colors.push(userColor);
         }
     });
@@ -117,14 +133,5 @@ wss.on('connection', function connection(ws) {
     }    
 
 });
-
-function isJson(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
 
 

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html class="no-js" lang="pt-br">
+    <head>
+        <script src="static/js/angular.min.js"></script>
+        <title>Chat Socket</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--Import Google Icon Font-->
+        <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <script src="static/js/jquery-1.11.2.min.js"></script>
+        <script src="static/js/moment.min.js"></script> 
+        <script src="static/js/angular-nicescroll.js"></script>
+        <script src="static/js/materialize.min.js"></script>
+        <script src="static/js/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+        <script src="static/js/index.js"></script>
+        <script src="static/js/sweetalert.min.js"></script>
+        <link rel="stylesheet" href="static/css/normalize.css">   
+        <link rel="stylesheet" href="static/css/animate.css">
+        <link rel="stylesheet" href="static/css/materialize.min.css">
+        <link rel="stylesheet" href="static/css/sweetalert.css">
+        <link rel="stylesheet" href="static/css/index.css">  	
+    </head>
+    <body ng-controller="MainCtrl" ng-app="app" class="colorBackground">        
+        <nav class="navbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
+                    <a href="javascript:void(0);" class="bars"></a>
+                    <a class="navbar-brand" href="../../index.html">ADMINBSB - MATERIAL DESIGN</a>
+                </div>
+                <div class="collapse navbar-collapse" id="navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <!-- Call Search -->
+                        <li><a href="javascript:void(0);" class="js-search" data-close="true"><i class="material-icons">search</i></a></li>
+                        <!-- #END# Call Search -->
+                        <!-- Notifications -->
+                        <li class="dropdown">
+                            <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                                <i class="material-icons">notifications</i>
+                                <span class="label-count">7</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="header">NOTIFICATIONS</li>
+                                <li class="body">
+                                    <ul class="menu">
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-light-green">
+                                                    <i class="material-icons">person_add</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4>12 new members joined</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> 14 mins ago
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-cyan">
+                                                    <i class="material-icons">add_shopping_cart</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4>4 sales made</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> 22 mins ago
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-red">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4><b>Nancy Doe</b> deleted account</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> 3 hours ago
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-orange">
+                                                    <i class="material-icons">mode_edit</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4><b>Nancy</b> changed name</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> 2 hours ago
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-blue-grey">
+                                                    <i class="material-icons">comment</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4><b>John</b> commented your post</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> 4 hours ago
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-light-green">
+                                                    <i class="material-icons">cached</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4><b>John</b> updated status</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> 3 hours ago
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <div class="icon-circle bg-purple">
+                                                    <i class="material-icons">settings</i>
+                                                </div>
+                                                <div class="menu-info">
+                                                    <h4>Settings updated</h4>
+                                                    <p>
+                                                        <i class="material-icons">access_time</i> Yesterday
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="footer">
+                                    <a href="javascript:void(0);">View All Notifications</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- #END# Notifications -->
+                        <!-- Tasks -->
+                        <li class="dropdown">
+                            <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                                <i class="material-icons">flag</i>
+                                <span class="label-count">9</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="header">TASKS</li>
+                                <li class="body">
+                                    <ul class="menu tasks">
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <h4>
+                                                    Footer display issue
+                                                    <small>32%</small>
+                                                </h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-pink" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 32%">
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <h4>
+                                                    Make new buttons
+                                                    <small>45%</small>
+                                                </h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-cyan" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 45%">
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <h4>
+                                                    Create new dashboard
+                                                    <small>54%</small>
+                                                </h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-teal" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 54%">
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <h4>
+                                                    Solve transition issue
+                                                    <small>65%</small>
+                                                </h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-orange" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 65%">
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);">
+                                                <h4>
+                                                    Answer GitHub questions
+                                                    <small>92%</small>
+                                                </h4>
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-purple" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100" style="width: 92%">
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="footer">
+                                    <a href="javascript:void(0);">View All Tasks</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- #END# Tasks -->
+                        <li class="pull-right"><a href="javascript:void(0);" class="js-right-sidebar" data-close="true"><i class="material-icons">more_vert</i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div id="modal-connect" class="modal colorBackground">
+            <div class="modal-content">
+                <h4 class="colorAccent">Enter name</h4>
+                <div class="row">
+                    <div class="input-field">
+                      <i class="material-icons prefix">account_circle</i>
+                      <input id="userName" ng-model="userName" type="text" class="validate" required>
+                      <label for="userName" data-error="Empty user name">Enter your name here</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer colorBackground">          
+            <a href="#" ng-click="connect(userName)" class="waves-effect waves-green btn-flat colorLabel">Join Chat</a>
+            <a href="javascript:window.history.back();" class="waves-effect waves-red btn-flat colorLabel">Cancel</a>
+            </div>
+        </div>    
+          
+        <div class="row">
+            <ul class="tabs colorPrimary">   
+                <li class="tab col  s6"><a class="waves-effect active" href="#test1">Main Chat</a></li>
+                <li class="tab col s6"><a class="waves-effect" href="#test2">Private Chat</a></li>
+            </ul>
+            <div id="test1" class="col s12">
+                <main class="content-messages">
+                    <ul class="messages">
+                        <li ng-repeat="message in messages">
+                            <div class="card z-depth-3 message animated fadeIn" ng-style="{background : message.color}" ng-class="{me: message.author == userName}">
+                                <div class="card-content white-text">
+                                    <span class="card-title" ng-hide="message.author != userName">{{message.author}}</span>
+                                    <p>{{message.content}}</p>
+                                    <span class="time">{{message.time}}</span>                                                
+                                </div>
+                            </div>
+                        </li>                             
+                    </ul>  
+                </main>
+                <footer class="colorPrimary" style="position:fixed;bottom:0;left:0;width:100%;">
+                    <div class="row" style="margin-bottom: 0;">
+                        <div class="col s11">
+                            <div class="card colorBackground cardRounded wrapperMessage">
+                                <div class="input-field">
+                                    <input id="message" ng-model="message" my-enter="sendMessage(message); message = ''" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">
+                                </div>
+                            </div>   
+                        </div>
+                        <div class="col s1">
+                            <a ng-click="sendMessage(message); message = ''" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound btnSend"><i class="material-icons">send</i></a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+            <div id="test2" class="col s12" style="padding: 0">
+                <div class="colorPrimary wrapper-select-private-chat">
+                    <div class="card colorBackground cardRounded wrapperMessage">
+                        <div class="input-field">                                          
+                            <select>
+                                <option value="" disabled selected>Choose your option</option>
+                                <option ng-repeat="user in userList" value="{{user.userID}}">{{user.userName}}</option>
+                            </select>
+                        </div>  
+                    </div>
+                </div>
+                <main>
+                    <ul class="messages">
+                        <!-- <li>
+                            <div class="card z-depth-3 message colorAccentBackgound ">
+                                <div class="card-content white-text">
+                                    <span class="card-title">Name of User</span>
+                                    <p>My name is Timi and I am...</p>
+                                    <span class="time">12:10 am</span>                                                
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="card z-depth-3 message colorAccentBackgound me">
+                                <div class="card-content white-text">
+                                    <p>My name is Timi and I am not a god. Inner places is not the atomic career of the doer.</p>
+                                    <span class="time">12:10 am</span>       
+                                </div>
+                            </div>
+                        </li>                   -->            
+                    </ul>
+                </main>
+                <footer class="colorPrimary" style="position:fixed;bottom:0;left:0;width:100%;">
+                    <div class="row" style="margin-bottom: 0;">
+                        <div class="col s11">
+                            <div class="card colorBackground cardRounded wrapperMessage">
+                                <div class="input-field">
+                                    <input id="messagePrivate" ng-model="messagePrivate" my-enter="sendMessagePrivate(message-private); message-private = ''" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">
+                                </div>
+                            </div>   
+                        </div>
+                        <div class="col s1">
+                            <a ng-click="sendMessagePrivate(messagePrivate); messagePrivate = ''" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound btnSend"><i class="material-icons">send</i></a>
+                        </div>
+                    </div>
+                </footer>
+            </div>                
+        </div>
+    </body>
+</html>

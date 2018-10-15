@@ -1,112 +1,162 @@
+<!DOCTYPE html>
 <html class="no-js" lang="pt-br">
-  <head>
-    <script src="static/js/angular.min.js"></script>
-    <title>Chat Socket</title>
-	  <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	  <!--Import Google Icon Font-->
-    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="static/js/jquery-1.11.2.min.js"></script>
-    <script src="static/js/moment.min.js"></script> 
-    <script src="static/js/angular-nicescroll.js"></script>
-  	<script src="static/js/materialize.min.js"></script>
-    <script src="static/js/modernizr-2.8.3-respond-1.4.2.min.js"></script>
-    <script src="static/js/index.js"></script>
-  	<script src="static/js/sweetalert.min.js"></script>
-    <link rel="stylesheet" href="static/css/normalize.css">   
-  	<link rel="stylesheet" href="static/css/animate.css">
-    <link rel="stylesheet" href="static/css/materialize.min.css">
-  	<link rel="stylesheet" href="static/css/sweetalert.css">
-    <link rel="stylesheet" href="static/css/index.css">  	
-  </head>
-  <body ng-controller="MainCtrl" ng-app="app">
-    <header >      
-      <div class="navbar-fixed">
-        <nav>   
-          <div class="nav-wrapper teal lighten-2">
-            <a href="#" class="brand-logo center">Chat Client App</a>
-            <ul  class="right">
-              <li>
-                <div ng-click="logout()" ng-show="showLogout">
-                  <a href="#" ><i class="material-icons" >input</i></a>
+    <head>
+        <script src="static/js/angular.min.js"></script>
+        <title>Chat Socket</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--Import Google Icon Font-->
+        <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <script src="static/js/jquery-1.11.2.min.js"></script>
+        <script src="static/js/moment.min.js"></script> 
+        <script src="static/js/angular-nicescroll.js"></script>
+        <script src="static/js/materialize.min.js"></script>
+        <script src="static/js/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+        <script src="static/js/index.js"></script>
+        <script src="static/js/sweetalert.min.js"></script>
+        <link rel="stylesheet" href="static/css/normalize.css">   
+        <link rel="stylesheet" href="static/css/animate.css">
+        <link rel="stylesheet" href="static/css/materialize.min.css">
+        <link rel="stylesheet" href="static/css/sweetalert.css">
+        <link rel="stylesheet" href="static/css/index.css">  	
+    </head>
+    <body ng-controller="MainCtrl" ng-app="app" class="colorBackground">        
+        <ul id="slide-out" class="side-nav colorBackground">
+            <li>                
+                <form class="colorPrimary" style="padding: 0.5em;">
+                    <div class="card colorBackground cardRounded">
+                        <div class="input-field">
+                            <i class="material-icons prefix colorLabel" style="margin: 0.5rem;">search</i>
+                            <input id="search" ng-model="search" class="colorLabel" type="search" required="" placeholder="Search a online user" style="padding-left:  0; border-bottom:  0; background:  transparent;">
+                            <label for="search" class="active"></label>
+                        </div>
+                    </div>
+                </form>
+            </li>
+            <li data-ng-repeat="user in userList | filter : search">
+                <a href="javascript:void(0);" class="waves-effect colorAccent user" ng-click="chattingWith(user.userID)">
+                    <i class="material-icons">account_circle</i>
+                    {{user.userName}}
+                </a>
+                <div class="divider"></div>
+            </li>
+        </ul>
+        <div class="navbar-fixed">
+            <nav>   
+                <div class="nav-wrapper colorPrimary">
+                    <a href="javascript:void(0);" data-activates="slide-out" class="button-collapse show-on-large"><i class="material-icons">menu</i></a>
+                    <a href="javascript:void(0);" class="brand-logo"><span ng-hide="connected">Chat Socket</span><span class="connected" ng-show="connected"><h5>Chat Socket</h5><h6>Chatting as {{userName}}</h6></span></a>
+                    <ul  class="right">
+                        <li>
+                            <div ng-click="logout()" ng-show="connected">
+                            <a href="javascript:void(0);"><i class="material-icons" >input</i></a>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-              </li>
-            </ul>
-          </div>
-        </nav>  
-      </div>          
-    </header>
-    <div class="container">
-      <div ng-show="showNameInput" class="card">
-        <div class="card-content">
-          <span class="card-title">Enter Name</span>
-          <div class="input-field">
-              <i class="material-icons prefix">account_circle</i>              
-              <input type="text" id="name" ng-model="userName">             
-              <label for="name">Enter your name here</label>
-          </div>         
-          <div class="row">
-            <button ng-click="submitName(userName)" class="col s12 waves-effect waves-light btn">
-              Join Chat
-            </button>
-          </div>
+            </nav>  
         </div>
-      </div>
-      <div ng-show="showChatScreen" class="card">        
-        <div class="card-content">
-          <ul class="tabs">
-            <li class="tab col s3"><a class="active" href="#chat">Chat</a></li>
-            <li class="tab col s3"><a href="#private-chat">Private Chat</a></li>
-          </ul>
-          <div id="chat">
-            <span class="card-title">
-              Chatting as <strong><em>{{userName}}</em></strong>
-            </span> 
-            <div class="row">
-              <div class="row">
-                <div id="content" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" nice-scroll-top-end="topEndComplete()" nice-scroll-end="endScroll()" class="col s9" ng-model="content"></div>
-                <div id="listUser" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" nice-scroll-top-end="topEndComplete()" nice-scroll-end="endScroll()" class="collection col s3" ng-model="listUser"></div>
-              </div>
-              <div class="row">
-                <div class="input-field col s10">
-                  <i class="material-icons prefix">message</i>              
-                  <input type="text" id="message" ng-model="message" my-enter="sendMessage(message); message = ''">         
-                  <label for="message">Message</label>
+        <div id="modal-connect" class="modal colorBackground">
+            <div class="modal-content">
+                <h4 class="colorAccent">Enter name</h4>
+                <div class="row">
+                    <div class="input-field">
+                      <i class="material-icons prefix">account_circle</i>
+                      <input id="userName" ng-model="userName" my-enter="connect(userName)" type="text" class="validate" required>
+                      <label for="userName" data-error="Empty user name">Enter your name here</label>
+                    </div>
                 </div>
-                <div class="input-field col s2">
-                  <a ng-click="sendMessage(message); message = ''" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">send</i></a>
-                </div>
-              </div>
             </div>
-          </div>
-          <div id="private-chat">
-            <span class="card-title">
-              Private Chatting with 
-              <select id="private-chat-users" class="browser-default" >
-                <option value="" disabled selected>Choose user</option>
-              </select>
-            </span>
-            <!-- <div class="row">
-              <div class="row">
-                <div id="content-private" ng-model="contentPrivate"></div>
-              </div>
-              <div class="row">
-                <div class="input-field col s10">
-                  <i class="material-icons prefix">message</i>              
-                  <input type="text" id="message-private" ng-model="message-private" my-enter="sendMessagePrivate(message-private); message-private = ''">         
-                  <label for="message-private">Message</label>
-                </div>
-                <div class="input-field col s2">
-                  <a ng-click="sendMessagePrivate(message-private); message-private = ''" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">send</i></a>
-                </div>
-              </div>
-            </div> 
-          </div> -->
+            <div class="modal-footer colorBackground">          
+            <a href="javascript:void(0);" ng-click="connect(userName)" class="waves-effect waves-green btn-flat colorLabel">Join Chat</a>
+            <a href="javascript:window.history.back();" class="waves-effect waves-red btn-flat colorLabel">Cancel</a>
+            </div>
+        </div>    
+          
+        <div class="row">
+            <ul class="tabs colorPrimary">   
+                <li class="tab col  s6"><a class="waves-effect active" href="#main-chat">Main Chat</a></li>
+                <li class="tab col s6"><a class="waves-effect" href="#private-chat">Private Chat</a></li>
+            </ul>
         </div>
-      </div> 
-    </div>
-  </body>  
+        <div id="main-chat" class="col s12">
+            <main class="content-messages">
+                <ul ng-model="messagesView" class="messages">
+                    <li data-ng-repeat="message in messages">
+                        <div class="card z-depth-3 message animated fadeIn" ng-style="{background : message.color}" ng-class="{me: message.author == userName}">
+                            <div class="card-content white-text">
+                                <span class="card-title" ng-hide="message.author == userName">{{message.author}}</span>
+                                <p>{{message.content}}</p>
+                                <span class="time">{{message.time}}</span>                                                
+                            </div>
+                        </div>
+                    </li>                              
+                </ul>  
+            </main>
+            <footer class="colorPrimary" style="position:fixed;bottom:0;left:0;width:100%;">
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="col s11">
+                        <div class="card colorBackground cardRounded wrapperMessage">
+                            <div class="input-field">
+                                <input id="message" ng-model="message" my-enter="sendMessage(message); message='';" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col s1">
+                        <a ng-click="sendMessage(message); message='';" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound btnSend"><i class="material-icons">send</i></a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <div id="private-chat" class="col s12" style="padding: 0">
+            <div class="colorPrimary wrapper-select-private-chat">
+                <div class="card colorBackground cardRounded wrapperMessage">
+                    <div class="input-field">                                      
+                        <select id="messagePrivateTo" >    
+                            <option value="" disabled selected>Choose your option</option>
+                            <option ng-repeat="user in userList" value="{{user.userID}}">{{user.userName}}</option>
+                        </select>
+                    </div>  
+                </div>
+            </div>
+            <main>
+                <ul class="messages" ng-repeat="user in userList" id="messages-{{user.userID}}">
+                    <!-- <li>
+                        <div class="card z-depth-3 message colorAccentBackgound ">
+                            <div class="card-content white-text">
+                                <span class="card-title">Name of User</span>
+                                <p>My name is Timi and I am...</p>
+                                <span class="time">12:10 am</span>                                                
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="card z-depth-3 message colorAccentBackgound me">
+                            <div class="card-content white-text">
+                                <p>My name is Timi and I am not a god. Inner places is not the atomic career of the doer.</p>
+                                <span class="time">12:10 am</span>       
+                            </div>
+                        </div>
+                    </li>                   -->            
+                </ul>
+            </main>
+            <footer class="colorPrimary" style="position:fixed;bottom:0;left:0;width:100%;">
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="col s11">
+                        <div class="card colorBackground cardRounded wrapperMessage">
+                            <div class="input-field">
+                                <input id="messagePrivate" ng-model="messagePrivate" my-enter="sendMessagePrivate(messagePrivate);" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">
+                            </div>
+                        </div>   
+                    </div>
+                    <div class="col s1">
+                        <a ng-click="sendMessagePrivate(messagePrivate);" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound btnSend"><i class="material-icons">send</i></a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </body>
 </html>

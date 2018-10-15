@@ -1,61 +1,55 @@
-angular.module("app", [])
-.controller('MainCtrl', function($scope, $document) {    
+const CONNECT_MESSAGE = 0;
+const DISCONNECT_MESSAGE = 1;
+const SIMPLE_MESSAGE = 2;
+const PRIVATE_MESSAGE = 3;
+const POLLING = 4;
+const CONNECTION_ACCEPTED = 5;
+const CONNECTION_REFUSED = 6;
 
-    // Define the URL for our server. As we are only running it locally, we will
-    // use localhost.
+angular.module("app", [])
+.controller('MainCtrl', function($scope, $document) {
     var host = location.origin.replace(/^http/, 'ws')
-    var userList = {};
-    var connected = false;
     var ws;
 
-    // Below we set the "showNameInput" and "showChatScreen" scope variables,
-    // which allow us to toggle the screens so we can show the name input
-    // in the beginning, and then the chat input once they have entered their
-    // name.
-    // Note:
-    $scope.showNameInput = true;
-    $scope.showChatScreen = false;
-    $scope.showLogout = false;
-    // Output to the log so we know when our controller is loaded.
-     console.log('MainCtrl loaded.');
+    $scope.messages = [];
+    $scope.privateMessages = []
+    $scope.userList = [];
+    $scope.connected = false;  
+    $('#modal-connect').modal({
+        dismissible: false, // Modal can be dismissed by clicking outside of the modal
+        opacity: .5, // Opacity of modal background
+        inDuration: 300, // Transition in duration
+        outDuration: 200, // Transition out duration
+        startingTop: '34%', // Starting top style attribute
+        endingTop: '40%', // Ending top style attribute                
+    });
+    $('#modal-connect').modal('open');
+    $('ul.tabs').tabs();
+    $('.button-collapse').sideNav({
+        menuWidth: 300, // Default is 300
+        edge: 'left', // Choose the horizontal origin
+        closeOnClick: true, 
+        draggable: true // Choose whether you can drag to open on touch screens
+    });
+    console.log('MainCtrl loaded.');
 
-    // Set the message lod and the name input to blank.
-    $scope.content = '';
-    $scope.contentPrivate = '';
     $scope.userName = '';
-    $scope.color = false;
-
-    /**
-        This function toggles between the screens. It basically just inverts
-        the values of the "showNameInput" and "showChatScreen" scope variables.
-        This works for our demo, but in a real app you might want to
-        use different screens as opposed to showing/hiding elements on one view.
-    */
-    function toggleScreens() {
-        $scope.showNameInput = !$scope.showNameInput;
-        $scope.showChatScreen = !$scope.showChatScreen;
-        $scope.showLogout = !$scope.showLogout;
-    }
-
-    /** This function initiates the connection to the web socket server. */
-    function connect() {
-        // Create a new WebSocket to the SERVER_URL (defined above). The empty
-        // array ([]) is for the protocols, which we are not using for this
-        // demo.
+    $scope.color = false;   
+   
+    $scope.connectChat =function connectChat() {
         ws = new WebSocket(host);
-        // Set the function to be called when a message is received.
-        ws.onmessage = handleMessageReceived;
-        // Set the function to be called when we have connected to the server.
-        ws.onopen = handleConnected;
-        // Set the function to be called when an error occurs.
-        ws.onerror = handleError;
+        ws.onmessage = $scope.handleMessageReceived;
+        ws.onopen = $scope.handleConnected;
+        ws.onerror = $scope.handleError;
         ws.onclose = function(event) {
-            if(connected){
-                $scope.content = '';
+            if($scope.connected){
+                $scope.connected = false;         
+                $scope.messages = [];
+                $scope.userList = [];
                 $scope.userName = '';
-                toggleScreens();
-                cleanChat();
-                connected = false;
+                $('#modal-connect').modal('open');
+                $('select').material_select(); 
+                $scope.$apply();    
                 swal({
                   title: "Warning",
                   text: "Disconnected from WebSocket!",
@@ -66,192 +60,182 @@ angular.module("app", [])
         };
     }
 
-    /**
-        This is the function that is called when the WebSocket receives
-        a message.
-    */
-    function handleMessageReceived(data) {        
+    $scope.handleMessageReceived = function handleMessageReceived(data) {        
         try {
             var json = JSON.parse(data.data);
         } catch (e) {
             console.log('This doesn\'t look like a valid JSON: ', data.data);
             return;
         }
-        // NOTE: if you're not sure about the JSON structure
-        // check the server source code above
-        if (json.type === 'color') { // first response from the server with user's color
-            $scope.color = json.data;
-            populateUserList(json.listUsers);
-        } else if (json.type === 'message') {      
-            logMessage(json.data.author, json.data.text,
-                       json.data.color, new Date(json.data.time));
-            if(json.data.text.search('disconnected') != -1){
-                removeUser(json.data.id, json.data.author);
-            } else if(json.data.text.search('connected') != -1){
-                addUser(json.data.id, json.data.author);
-            }
-        } else {
-            console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+        switch(json.type){
+            case CONNECTION_ACCEPTED:
+                $scope.color = json.data;
+                $scope.populateUserList(json.listUsers); 
+                break;
+            case CONNECTION_REFUSED:
+                ws.close();       
+                $scope.connected = false;          
+                $scope.messages = [];
+                $scope.userList = [];
+                $scope.userName = '';
+                
+                $('#modal-connect').modal('open');
+                console.log("open");      
+                $scope.$apply();           
+                $('select').material_select();                 
+                break;
+            case CONNECT_MESSAGE:
+                $scope.logMessage(json.data.author, json.data.text,
+                    json.data.color, new Date(json.data.time));
+                $scope.addUser(json.data.id, json.data.author);
+                break;
+            case DISCONNECT_MESSAGE:
+                $scope.logMessage(json.data.author, json.data.text,
+                    json.data.color, new Date(json.data.time));
+                $scope.removeUser(json.data.id);
+                break;
+            case SIMPLE_MESSAGE:
+                $scope.logMessage(json.data.author, json.data.text,
+                    json.data.color, new Date(json.data.time));
+                break;
+            case PRIVATE_MESSAGE:
+                $scope.logMessage(json.data.author, json.data.text,
+                    json.data.color, new Date(json.data.time));
+                break;
+            case POLLING : 
+                break;
+            default:
+                console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+                break;               
         }
     }
 
-    /**
-        This is the function that is called when the WebSocket connects
-        to the server.
-    */
-    function handleConnected(data) {        
-        swal({
-          title: "Success",
-          text: "Connected!",
-          type: "success",
-          confirmButtonColor: "#4db6ac",
-        });
-        connected = true;   
-        ws.send($scope.userName);
+    $scope.handleConnected = function handleConnected(data) {
+        $scope.connected = true;   
+        ws.send(JSON.stringify({
+            type: CONNECT_MESSAGE,
+            userName: $scope.userName
+        }));
     }
 
-    /**
-        This is the function that is called when an error occurs with our
-        WebSocket.
-    */
-    function handleError(err) {
-        // Print the error to the console so we can debug it.
+    $scope.handleError = function handleError(err) {
         console.log("Error: ", err);
     }
 
-    /** This function adds a message to the message log. */
-    function logMessage(author, message, color, dt) {
-        // $apply() ensures that the elements on the page are updated
-        // with the new message.
-        //Append out new message to our message log. The \n means new line.
-        //document.getElementById('content').appendChild(e.firstChild)
-
-        angular.element(
-            document.getElementById('content'))
-            .append('<p class="animated fadeIn">['
-         + (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
-         + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
-         + '] <span style="color:' + color + '">' + author + '</span>: ' + message + '</p>');
-        // Update the scrolling (defined below).
+    $scope.logMessage = function logMessage(author, message, color, dt) {
+        var time = (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
+        + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes());
+        $scope.messages.push({
+            author : author,
+            color: color,
+            content : message,
+            time : time
+        });
+        $scope.$apply();
         updateScrolling();
-
     }
 
-    /**
-        Updates the scrolling so the latest message is visible.
-        NOTE: This is not really best practice... In your rela app, you
-        would have this logic in the directive.
-    */
     function updateScrolling() {
-        // Get a handle on the element using the querySelector.
-        var msgLog = $document[0].querySelector('#content');
-        // Set the top of the scroll to the height. This makes the box scroll
-        // to the bottom.
+        var msgLog = $document[0].querySelector('#main-chat main');
         msgLog.scrollTop = msgLog.scrollHeight;
     }
 
-
-    function populateUserList(stringList) {
+    $scope.populateUserList = function populateUserList(stringList) {
         var json = JSON.parse(stringList);
         for (var i=0;i<json.length;i++){
-            var idUser = json[i].id;                   
-            userList[json[i].name] = idUser;
-            angular.element(
-                    document.getElementById('listUser'))
-                    .append('<a id="userID' + idUser + '" href="#!" class="collection-item avatar"> '
-                        +'<i class="material-icons teal lighten-2 circle">face</i>'
-                        +'<span class="title">' + json[i].name + '</span></a>');
+            var idUser = json[i].id;            
             if(json[i].name.localeCompare($scope.userName) != 0){
-                angular.element(
-                    document.getElementById('private-chat-users'))
-                    .append('<option value="' + idUser + '"> '
-                    + json[i].name + '</option>');
+                $scope.userList.push({
+                    userID: idUser,
+                    userName: json[i].name 
+                });
             }
-        }                     
-    }
-
-    function removeUser(id, name) {
-        delete userList[name];
-        document.getElementById("userID" + id).remove();
-        var selectobject=document.getElementById("private-chat-users")
-        for (var i=0; i<selectobject.length; i++){
-            if (selectobject.options[i].value == id )
-                selectobject.remove(i);
         }
+        $scope.$apply();        
+        $('select').material_select();                    
     }
 
-    function addUser(id,name) {
-        userList[name] = id ;
-        angular.element(
-                    document.getElementById('listUser'))
-                    .append('<a id="userID' + id + '" href="#!" class="collection-item avatar"> '
-                        +'<i class="material-icons teal lighten-2 circle">face</i>'
-                        +'<span class="title">' + name + '</span></a>');
-        angular.element(
-                    document.getElementById('private-chat-users'))
-                    .append('<option value="' + id + '"> '
-                    + name + '</option>');
+    $scope.removeUser = function removeUser(id) {                
+        for (let user of $scope.userList) {
+            if (id === user.userID) {
+                $scope.userList.splice($scope.userList.indexOf(user), 1);
+                break;
+            }
+        }    
+        $scope.$apply()        
+        $('select').material_select();
     }
 
-    $scope.logout = function(){               
-        $scope.content = '';
+    $scope.addUser = function addUser(id,name) {        
+        $scope.userList.push({
+            userID: id,
+            userName: name 
+        });
+        $scope.$apply()        
+        $('select').material_select();
+    }
+
+    $scope.logout = function(){
+        ws.close();       
+        $scope.connected = false;          
+        $scope.messages = [];
+        $scope.userList = [];
         $scope.userName = '';
-        toggleScreens();
-        cleanChat();
-        connected = false;   
-        swal({
-          title: "Success",
-          text: "Disconnected!",
-          type: "success",
-          confirmButtonColor: "#4db6ac",
-        },
-        function(){
-          ws.close();;
-        });        
+        
+        $('#modal-connect').modal('open');       
+        $scope.$apply();           
+        $('select').material_select();
+    };
+    
+    $scope.connect = function connect(name) {
+        if (!name) {
+            $('.modal-content input').addClass("invalid");
+            $('.modal-content input').prop("aria-invalid", "true");
+            return;
+        }        
+        $('.modal').modal('close');
+        console.log("close");
+        $('.modal-content input').removeClass("invalid");
+        $('.modal-content input').prop("aria-invalid", "false");
+        $scope.userName = name;
+        $scope.connectChat();
     };
 
-    function cleanChat() {
-        for(var item in userList) {
-            console.log(userList[item], item );
-            removeUser(userList[item], item );
-        }
+    $scope.chattingWith = function chattingWith(name) {
+        $('ul.tabs').tabs('select_tab', 'private-chat');      
+        $('.card div .select-wrapper select').val(name);
+        $('.card div .select-wrapper select').material_select();
     }
 
-    /** This is our scope function that is called when the user submits their name. */
-    $scope.submitName = function submitName(name) {
-        // If they left the name blank, then return without doing anything.
-        if (!name) {
-            return;
-        }
-        // Set the userName scope variable to the submitted name.
-        $scope.userName = name;
-        // Call our connect() function.
-        connect();
-        // Toggle the screens (hide the name input, show the chat screen)
-        toggleScreens();
-    };
-
-    /** This is the scope function that is called when a users hits send. */
     $scope.sendMessage = function sendMessage(msg) {
         if (!msg) {
             return;
         }
-        ws.send(msg);
+        ws.send(JSON.stringify({
+            type: SIMPLE_MESSAGE,
+            message: msg
+        }));
     };
 
-    $scope.sendMessagePrivate = function(msg) {
-        if (!msg) {
+    $scope.sendMessagePrivate = function sendMessagePrivate(msg) {    
+        let to = $("#messagePrivateTo").val();
+        console.log(to, msg);    
+        if (!msg || to == null) {            
             return;
         }
-        ws.send(msg);
+        ws.send(JSON.stringify({
+            type: PRIVATE_MESSAGE,
+            to: to,
+            message: msg
+        }));
+        $scope.messagePrivate = "";
     };
 
     setInterval(function() {
-        if(connected){
-            ws.send("polling");
+        if($scope.connected){
+            ws.send(JSON.stringify({type: POLLING}));
         }
     }, 30000);
-
 
 })
 .directive('myEnter', function () {

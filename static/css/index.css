@@ -7,16 +7,175 @@
     margin-top:10px; 
     height: 50%; 
 }
-.tabs .tab a{
-    color:#00ACC1;
+.colorPrimary{
+	background: #252525;
 }
-.tabs .tab a:hover,.tabs .tab a.active {
-	background-color:transparent;
-	color:#008B9B;
+.colorPrimaryDark{
+	background:#1C1C1C;
 }
-.tabs .tab.disabled a,.tabs .tab.disabled a:hover {
-	color:rgba(102,147,153,0.7);	
+.colorAccent{
+	color:#1DE9C3;
+}
+.colorAccentBackgound{
+	background:#1DE9C3;
+}
+.colorBackground{
+	background:#383838;
+}
+.colorLabel{
+	color:#BDBDBD;
+}
+.cardRounded {
+    border-radius: 3em;
+}
+#slide-out li .divider {
+    background-color: rgba(24, 24, 24, 0.5);
+}
+.connected h5{
+    margin: 0.6rem 0 .3rem 0;
+}
+.connected h6{
+    margin: 0;
+}
+.wrapperMessage {
+    padding: 0.01rem 2rem 0.01rem 2rem;
+    margin: 0.5rem 0.5rem;
+}
+.card div .inputMessage {
+    padding-left:  0;
+    border-bottom:  0;
+    background:  transparent; 
+    height: 1.5rem;
+}
+.btnSend {
+    margin-top: 0.6rem;
+    margin-right: 1.0rem;
+}
+.modal .modal-footer {
+	background:#383838;
+}
+.modal-content .row input:not([type]):focus:not([readonly]), .modal-content .row input[type=text]:focus:not([readonly]),
+.modal-content .row input[type=password]:focus:not([readonly]), .modal-content .row input[type=email]:focus:not([readonly]), 
+.modal-content .row input[type=url]:focus:not([readonly]), .modal-content .row input[type=time]:focus:not([readonly]), 
+.modal-content .row input[type=date]:focus:not([readonly]), .modal-content .row input[type=datetime]:focus:not([readonly]), 
+.modal-content .row input[type=datetime-local]:focus:not([readonly]), .modal-content .row input[type=tel]:focus:not([readonly]), 
+.modal-content .row input[type=number]:focus:not([readonly]), .modal-content .row input[type=search]:focus:not([readonly]){
+    border-bottom: 1px solid #1DE9C3;
+    box-shadow: 0 1px 0 0 #1DE9C3; 
+    color: white;   
+} 
+.modal-content .row input:not([type]):focus:not([readonly])+label, input[type=text]:focus:not([readonly])+label, 
+.modal-content .row input[type=password]:focus:not([readonly])+label, .modal-content .row input[type=email]:focus:not([readonly])+label, 
+.modal-content .row input[type=url]:focus:not([readonly])+label, .modal-content .row input[type=time]:focus:not([readonly])+label, 
+.modal-content .row input[type=date]:focus:not([readonly])+label, .modal-content .row input[type=datetime]:focus:not([readonly])+label, 
+.modal-content .row input[type=datetime-local]:focus:not([readonly])+label, .modal-content .row input[type=tel]:focus:not([readonly])+label, 
+.modal-content .row input[type=number]:focus:not([readonly])+label, .modal-content .row input[type=search]:focus:not([readonly])+label {
+    color: #1DE9C3;
+}
+.modal-content .row .input-field .prefix, 
+.modal-content .row .input-field .prefix .active {
+    color: #1DE9C3;
+}
+.card div input:not([type]):focus:not([readonly]), .card div input[type=text]:focus:not([readonly]),
+.card div input[type=password]:focus:not([readonly]), .card div input[type=email]:focus:not([readonly]), 
+.card div input[type=url]:focus:not([readonly]), .card div input[type=time]:focus:not([readonly]), 
+.card div input[type=date]:focus:not([readonly]), .card div input[type=datetime]:focus:not([readonly]), 
+.card div input[type=datetime-local]:focus:not([readonly]), .card div input[type=tel]:focus:not([readonly]), 
+.card div input[type=number]:focus:not([readonly]), .card div input[type=search]:focus:not([readonly]), 
+.card div textarea.materialize-textarea:focus:not([readonly]), .card div input:not([type]):not([readonly]), 
+.card div input[type=text]:not([readonly]),.card div input[type=password]:not([readonly]), 
+.card div input[type=email]:not([readonly]), .card div input[type=url]:not([readonly]), 
+.card div input[type=time]:not([readonly]), .card div input[type=date]:not([readonly]), 
+.card div input[type=datetime]:not([readonly]), .card div input[type=datetime-local]:not([readonly]),
+.card div input[type=tel]:not([readonly]), .card div input[type=number]:not([readonly]), 
+.card div input[type=search]:not([readonly]), .card div textarea.materialize-textarea:not([readonly]),
+.card div .select-wrapper > * {
+    border-bottom: 1px solid transparent;
+    box-shadow: 0 1px 0 0 transparent;
+    color: white;
+}
+.card div .select-wrapper input{
+    margin: 0 0 1.0rem 0;
+}
+.card .input-field  i {
+    color: #BDBDBD;
+}
+.input-field .select-wrapper ul {
+    background:#383838;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+}
+.dropdown-content li:hover, .dropdown-content li.active, .dropdown-content li.selected {
+    background-color: rgba(224, 224, 224, 0.5);
+}
+.dropdown-content li.active.selected {
+    background-color: #e1e1e179;
+}
+.input-field .select-wrapper ul  li:not(.disabled) span {
+    color: #1DE9C3;
+}
+.select-dropdown li.disabled, .select-dropdown li.disabled>span, .select-dropdown li.optgroup {
+    color: #BDBDBD;
+    background-color: transparent;
+}
+.content-messages{
+    margin-top: 50px;
+    margin-bottom: 4rem;
+}
+.tabs {
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    z-index: 996;
+    position: fixed;
+    overflow: hidden;
 }
 .tabs .indicator {
-	background-color:#009BAD;
+    background-color: #1DE9C3;
+}
+.tabs .tab a {
+    color: #BDBDBD;
+}
+.side-nav li>a {
+    color: #1DE9C3;
+}
+.side-nav li>a>i, .side-nav li>a>[class^="mdi-"], .side-nav li>a li>a>[class*="mdi-"], .side-nav li>a>i.material-icons {
+    color: #1DE9C3;
+}
+.messages {
+    margin-bottom: 5%;
+    width: 100%;
+    overflow: auto;
+    list-style-type: none;
+    display: inline-grid;
+    border-left: none;
+    border-right: none;
+}
+.messages > li {
+    margin: 10px;
+    -webkit-transition: all .5s;
+    transition: all .5s;
+}  
+.message {
+    margin: 0;
+    border-radius: 10px;
+    line-height: 25px;
+    max-width: 500px;
+    word-wrap: break-word;
+    position: relative;
+    float: left;
+}
+.message .card-content .time{
+    float: right;
+    font-style: italic;
+    margin: 10px;
+}
+.me {
+    float: right;
+}
+.wrapper-select-private-chat{
+    padding: 0.5rem; 
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    margin-top: 48px;
+}
+.tabs .tab a:hover, .tabs .tab a.active {
+    background-color: transparent;
+    color: white;
 }
