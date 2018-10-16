@@ -43,16 +43,11 @@ wss.on('connection', function connection(ws) {
         message = JSON.parse(message);
         switch(message.type){
             case CONNECT_MESSAGE:
-                var userExists = false
-                for (var i = 0; i < users.length; i++) {
-                    console.log("connection", users[i].name, message.userName);
-                    if(users[i].name === message.userName){
-                        console.log((new Date()) + ' connection refused.');
-                        ws.send(JSON.stringify({ type: CONNECTION_REFUSED}));                    
-                        userExists = true;
-                        break;
-                    }
-                }
+                var userExists = users.some(function(user) {
+                    console.log(user.name, message.userName);
+                    return user.name === message.userName;
+                });
+                console.log("test: " + userExists);
                 if(!userExists){
                     userName = message.userName;
                     userColor = colors.shift();
@@ -77,6 +72,9 @@ wss.on('connection', function connection(ws) {
                     });
                     console.log((new Date()) + ' User is known as: ' + userName
                                 + ' with ' + userColor + ' color.');
+                } else {
+                    console.log((new Date()) + ' connection refused.');
+                    ws.send(JSON.stringify({ type: CONNECTION_REFUSED}));
                 }
                 break;
             case SIMPLE_MESSAGE:            
@@ -101,7 +99,7 @@ wss.on('connection', function connection(ws) {
     });
 
     ws.on('close', function(connection) {
-        if (userName !== false && userColor !== false) {
+        if (userName !== false) {
             console.log((new Date()) + " Peer "
                 + userName + " disconnected.");
             var obj = {

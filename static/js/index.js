@@ -77,12 +77,20 @@ angular.module("app", [])
                 $scope.connected = false;          
                 $scope.messages = [];
                 $scope.userList = [];
-                $scope.userName = '';
-                
-                $('#modal-connect').modal('open');
-                console.log("open");      
-                $scope.$apply();           
-                $('select').material_select();                 
+                swal({
+                    title: "Error",
+                    text: "Exists a user with name \""+$scope.userName+"\"!",
+                    type: "error",
+                    confirmButtonColor: "#4db6ac",
+                });   
+                $scope.userName = '';  
+                setTimeout(function(){ 
+                    $scope.$apply();  
+                    console.log("open"); 
+                    $('#modal-connect').modal('open');
+                    $('select').material_select(); 
+                }, 1000);
+                                        
                 break;
             case CONNECT_MESSAGE:
                 $scope.logMessage(json.data.author, json.data.text,

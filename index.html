@@ -115,12 +115,13 @@
             <div class="colorPrimary wrapper-select-private-chat">
                 <div class="card colorBackground cardRounded wrapperMessage">
                     <div class="input-field">                                      
-                        <select id="messagePrivateTo" >    
+                        <select id="messagePrivateTo" ng-model="messagePrivateTo">   
                             <option value="" disabled selected>Choose your option</option>
                             <option ng-repeat="user in userList" value="{{user.userID}}">{{user.userName}}</option>
                         </select>
                     </div>  
                 </div>
+                <h6>Chatting as {{messagePrivateTo}}</h6>
             </div>
             <main>
                 <ul class="messages" ng-repeat="user in userList" id="messages-{{user.userID}}">
