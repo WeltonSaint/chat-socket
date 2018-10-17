@@ -78,7 +78,7 @@
           
         <div class="row">
             <ul class="tabs colorPrimary">   
-                <li class="tab col  s6"><a class="waves-effect active" href="#main-chat">Main Chat</a></li>
+                <li class="tab col s6"><a class="waves-effect active" href="#main-chat">Main Chat</a></li>
                 <li class="tab col s6"><a class="waves-effect" href="#private-chat">Private Chat</a></li>
             </ul>
         </div>
@@ -121,27 +121,18 @@
                         </select>
                     </div>  
                 </div>
-                <h6>Chatting as {{messagePrivateTo}}</h6>
             </div>
             <main>
-                <ul class="messages" ng-repeat="user in userList" id="messages-{{user.userID}}">
-                    <!-- <li>
-                        <div class="card z-depth-3 message colorAccentBackgound ">
+                <ul class="messages animated fade" ng-repeat="user in userList" ng-hide="chattingWithUser != user.userID">
+                    <li data-ng-repeat="privateMessage in privateMessages[user.userID]">
+                        <div class="card z-depth-3 message animated fadeIn" ng-style="{background : privateMessage.color}" ng-class="{me: privateMessage.author == userName}">
                             <div class="card-content white-text">
-                                <span class="card-title">Name of User</span>
-                                <p>My name is Timi and I am...</p>
-                                <span class="time">12:10 am</span>                                                
+                                <span class="card-title" ng-hide="privateMessage.author == userName">{{privateMessage.author}}</span>
+                                <p>{{privateMessage.content}}</p>
+                                <span class="time">{{privateMessage.time}}</span>                                                
                             </div>
                         </div>
-                    </li>
-                    <li>
-                        <div class="card z-depth-3 message colorAccentBackgound me">
-                            <div class="card-content white-text">
-                                <p>My name is Timi and I am not a god. Inner places is not the atomic career of the doer.</p>
-                                <span class="time">12:10 am</span>       
-                            </div>
-                        </div>
-                    </li>                   -->            
+                    </li>  
                 </ul>
             </main>
             <footer class="colorPrimary" style="position:fixed;bottom:0;left:0;width:100%;">

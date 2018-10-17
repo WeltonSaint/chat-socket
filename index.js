@@ -14,24 +14,18 @@ const CONNECTION_REFUSED = 6;
 
 var users = [];
 var idCounter = 0;
-// Array with some colors
-var colors = [ 'red', 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
-// ... in random order
-colors.sort(function(a,b) { return Math.random() > 0.5; } );
 
+var colors = [ 'red', 'green', 'blue', 'magenta', 'purple', 'plum', 'orange' ];
+colors.sort(function(a,b) { return Math.random() > 0.5; } );
 app.use(express.static(__dirname + "/"));
 
 var server = http.createServer(app);
 server.listen(port);
-
 console.log("http server listening on %d", port);
 
 var wss = new WebSocketServer({server: server});
 console.log("websocket server created");
 
-// Create a listener function for the "connection" event.
-// Each time we get a connection, the following function
-// is called.
 wss.on('connection', function connection(ws) {
     var connectionID = idCounter++;
     var userName = false;
@@ -44,56 +38,91 @@ wss.on('connection', function connection(ws) {
         switch(message.type){
             case CONNECT_MESSAGE:
                 var userExists = users.some(function(user) {
-                    console.log(user.name, message.userName);
                     return user.name === message.userName;
                 });
-                console.log("test: " + userExists);
                 if(!userExists){
                     userName = message.userName;
                     userColor = colors.shift();
+
                     users[connectionID] = {
-                        'name': userName,
-                        'color' : userColor,
+                        'name'   : userName,
+                        'color'  : userColor,
                         'socket' : ws
-                    };            
-                    ws.send(JSON.stringify({ type: CONNECTION_ACCEPTED, data: userColor, listUsers: getListUser()}));            
+                    };  
+
+                    ws.send(JSON.stringify({ 
+                        type      : CONNECTION_ACCEPTED,
+                        id        : connectionID,
+                        data      : userColor, 
+                        listUsers : getListUser()
+                    })); 
+
                     var obj = {
-                        type: CONNECT_MESSAGE,
-                        time: (new Date()).getTime(),
-                        id : connectionID,
-                        text: " connected.",
-                        author: userName,
-                        color: userColor
+                        type   : CONNECT_MESSAGE,
+                        time   : (new Date()).getTime(),
+                        id     : connectionID,
+                        text   : " connected.",
+                        author : userName,
+                        color  : userColor
                     };
+
                     wss.clients.forEach(function each(client) {
                         if (client !== ws ) {
-                            client.send(JSON.stringify({ type: CONNECT_MESSAGE, data: obj }));
+                            client.send(JSON.stringify({ 
+                                type : CONNECT_MESSAGE, 
+                                data : obj 
+                            }));
                         }
                     });
+
                     console.log((new Date()) + ' User is known as: ' + userName
                                 + ' with ' + userColor + ' color.');
                 } else {
                     console.log((new Date()) + ' connection refused.');
-                    ws.send(JSON.stringify({ type: CONNECTION_REFUSED}));
+                    ws.send(JSON.stringify({ 
+                        type: CONNECTION_REFUSED
+                    }));
                 }
                 break;
             case SIMPLE_MESSAGE:            
-                console.log((new Date())+ userName + ': ' + message.message);    
+                console.log((new Date()) + ' ' + userName + ': ' + message.message);    
                 var obj = {
-                    time: (new Date()).getTime(),
-                    id : connectionID,
-                    text: message.message,                
-                    author: userName,
-                    color: userColor
+                    time   : (new Date()).getTime(),
+                    id     : connectionID,
+                    text   : message.message,                
+                    author : userName,
+                    color  : userColor
                 };
-                // broadcast message to all connected clients
-                var json = JSON.stringify({ type: SIMPLE_MESSAGE, data: obj });
+
+                var json = JSON.stringify({ 
+                    type : SIMPLE_MESSAGE,
+                    data : obj 
+                });
+                
                 wss.clients.forEach(function each(client) {
                     client.send(json);
                 });
                 break;
             case PRIVATE_MESSAGE:
-                users[message.to].socket.send(JSON.stringify(message));
+                console.log((new Date()) + ' ' + userName 
+                        + ' to ' + users[message.to].name 
+                        + ': ' + message.message);
+                var obj = {
+                    time   : (new Date()).getTime(),
+                    id     : connectionID,
+                    to     : message.to,
+                    text   : message.message,                
+                    author : userName,
+                    color  : userColor
+                };
+
+                var json = JSON.stringify({ 
+                    type: PRIVATE_MESSAGE, 
+                    data: obj 
+                });
+
+                users[message.to].socket.send(json);
+                ws.send(json);
                 break;
         }        
     });
@@ -103,17 +132,22 @@ wss.on('connection', function connection(ws) {
             console.log((new Date()) + " Peer "
                 + userName + " disconnected.");
             var obj = {
-                time: (new Date()).getTime(),
-                id : connectionID,
-                text: " disconnected.",
-                author: userName,
-                color: userColor
+                time   : (new Date()).getTime(),
+                id     : connectionID,
+                text   : " disconnected.",
+                author : userName,
+                color  : userColor
             };
-            var json = JSON.stringify({ type: DISCONNECT_MESSAGE, data: obj });
+
+            var json = JSON.stringify({ 
+                type: DISCONNECT_MESSAGE, 
+                data: obj 
+            });
+
             wss.clients.forEach(function each(client) {
                 client.send(json);
             });
-            console.log(users[connectionID].name);
+
             users.splice(connectionID, 1);
             colors.push(userColor);
         }
@@ -124,6 +158,7 @@ wss.on('connection', function connection(ws) {
         users.forEach(function (value, key) {
             list +=  '{"id": "' + key + '", "name" :"' + value.name.toString() + '"},';
         });
+
         list = list.substring(0, list.length-1);
         list += ']';
         
