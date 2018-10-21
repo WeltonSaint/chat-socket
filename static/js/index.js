@@ -6,12 +6,14 @@ const POLLING = 4;
 const CONNECTION_ACCEPTED = 5;
 const CONNECTION_REFUSED = 6;
 
-angular.module("app", [])
+angular.module("app", ['angular-nicescroll'])
 .controller('MainCtrl', function($scope, $document) {
 
     var host = location.origin.replace(/^http/, 'ws')
     var ws;
-
+    var fileSelect = document.createElement('input'), 
+        fileSelectPrivate = document.createElement('input');;    
+    
     $scope.messages = [];
     $scope.privateMessages = [[]];
     $scope.userList = [];
@@ -20,6 +22,10 @@ angular.module("app", [])
     $scope.color = false;
     $scope.connectionID = -1;
     $scope.chattingWithUser = -1;  
+    fileSelect.type = 'file';
+    fileSelect.accept= 'image/*';
+    fileSelectPrivate.type = 'file';
+    fileSelectPrivate.accept= 'image/*';
 
     $('#modal-connect').modal({
         dismissible : false, // Modal can be dismissed by clicking outside of the modal
@@ -37,6 +43,7 @@ angular.module("app", [])
         closeOnClick : true, 
         draggable    : true // Choose whether you can drag to open on touch screens
     });
+    $('.materialboxed').materialbox();
     console.log('MainCtrl loaded.');
    
     $scope.connectChat =function connectChat() {
@@ -45,8 +52,7 @@ angular.module("app", [])
         ws.onopen = $scope.handleConnected;
         ws.onerror = $scope.handleError;
         ws.onclose = function(event) {
-            if($scope.connected){
-                
+            if($scope.connected){                
                 $scope.connected = false;         
                 $scope.messages = [];
                 $scope.userList = [];
@@ -107,22 +113,22 @@ angular.module("app", [])
                 break;
             case CONNECT_MESSAGE:
                 $scope.logMessage(json.data.author, json.data.text,
-                    json.data.color, new Date(json.data.time));
+                    json.data.color, "", new Date(json.data.time));
                 $scope.addUser(json.data.id, json.data.author);
                 break;
             case DISCONNECT_MESSAGE:
                 $scope.logMessage(json.data.author, json.data.text,
-                    json.data.color, new Date(json.data.time));
+                    json.data.color, "", new Date(json.data.time));
                 $scope.removeUser(json.data.id);
                 break;
             case SIMPLE_MESSAGE:
                 $scope.logMessage(json.data.author, json.data.text,
-                    json.data.color, new Date(json.data.time));
+                    json.data.color, json.data.image, new Date(json.data.time));
                 break;
             case PRIVATE_MESSAGE:
                 $scope.logMessagePrivate(json.data.id, json.data.author, 
                     json.data.to, json.data.text, json.data.color, 
-                    new Date(json.data.time));
+                    json.data.image, new Date(json.data.time));
                 break;
             case POLLING : 
                 break;
@@ -145,13 +151,14 @@ angular.module("app", [])
         console.log("Error: ", err);
     }
 
-    $scope.logMessage = function logMessage(author, message, color, dt) {
+    $scope.logMessage = function logMessage(author, message, color, image, dt) {
         var time = (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) 
         + ':' + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes());
         
         $scope.messages.push({
             author  : author,
             color   : color,
+            image   : image,
             content : message,
             time    : time
         });
@@ -161,7 +168,7 @@ angular.module("app", [])
     }
 
     $scope.logMessagePrivate = function logMessagePrivate(id, author, to, 
-                                                message, color, dt) {
+                                                message, color, image, dt) {
         var time = (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) 
         + ':' + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes());
         var idAnotherUser = (id != $scope.connectionID) ? id : to;
@@ -172,6 +179,7 @@ angular.module("app", [])
         $scope.privateMessages[idAnotherUser].push({
             author  : author,
             color   : color,
+            image   : image,
             content : message,
             time    : time
         });
@@ -184,6 +192,42 @@ angular.module("app", [])
         $scope.chattingWithUser = e.target.value;
         $scope.$apply();
     });    
+
+    $scope.sendImage = function sendImage() {
+        fileSelect.click();
+    }
+
+    fileSelect.onchange = function() {
+        var f = fileSelect.files[0], r = new FileReader();
+        r.onloadend = function(e) {
+            ws.send(JSON.stringify({
+                type  : SIMPLE_MESSAGE,
+                image : e.target.result
+            }));      
+        }
+
+        r.readAsDataURL(f);
+    };
+
+    $scope.sendImagePrivate = function sendImagePrivate() {
+        if($("#messagePrivateTo").val() != null)
+            fileSelectPrivate.click();
+    }
+
+    fileSelectPrivate.onchange = function() {
+        var f = fileSelectPrivate.files[0], r = new FileReader();
+        r.onloadend = function(e) {
+            let to = $("#messagePrivateTo").val();
+
+            ws.send(JSON.stringify({
+                type  : PRIVATE_MESSAGE,
+                to    : to,
+                image : e.target.result
+            }));       
+        }
+
+        r.readAsDataURL(f);
+    };
 
     function updateScrolling() {
         var msgLog = $document[0].querySelector('#main-chat main');
@@ -305,7 +349,7 @@ angular.module("app", [])
         if($scope.connected){
             ws.send(JSON.stringify({type: POLLING}));
         }
-    }, 30000);
+    }, 30000);   
 
 })
 .directive('myEnter', function () {

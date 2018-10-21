@@ -27,7 +27,9 @@ var wss = new WebSocketServer({server: server});
 console.log("websocket server created");
 
 wss.on('connection', function connection(ws) {
-    var connectionID = idCounter++;
+    console.log("test(0): ", idCounter);
+    var connectionID = ++idCounter;
+    console.log("test(1): ", idCounter , "test(connectionID): ",connectionID);
     var userName = false;
     var userColor = false;
 
@@ -84,12 +86,16 @@ wss.on('connection', function connection(ws) {
                     }));
                 }
                 break;
-            case SIMPLE_MESSAGE:            
-                console.log((new Date()) + ' ' + userName + ': ' + message.message);    
+            case SIMPLE_MESSAGE:
+                if(message.message)          
+                    console.log((new Date()) + ' ' + userName + ': ' + message.message);
+                else    
+                    console.log((new Date()) + ' ' + userName + ' send a image');    
                 var obj = {
                     time   : (new Date()).getTime(),
                     id     : connectionID,
-                    text   : message.message,                
+                    text   : message.message,
+                    image  : message.image,                
                     author : userName,
                     color  : userColor
                 };
@@ -104,13 +110,19 @@ wss.on('connection', function connection(ws) {
                 });
                 break;
             case PRIVATE_MESSAGE:
-                console.log((new Date()) + ' ' + userName 
+                if(message.message)          
+                    console.log((new Date()) + ' ' + userName 
                         + ' to ' + users[message.to].name 
                         + ': ' + message.message);
+                else    
+                    console.log((new Date()) + ' ' + userName 
+                        + ' send a image to ' + users[message.to].name); 
+                
                 var obj = {
                     time   : (new Date()).getTime(),
                     id     : connectionID,
-                    to     : message.to,
+                    to     : message.to,                    
+                    image  : message.image, 
                     text   : message.message,                
                     author : userName,
                     color  : userColor
@@ -158,8 +170,8 @@ wss.on('connection', function connection(ws) {
         users.forEach(function (value, key) {
             list +=  '{"id": "' + key + '", "name" :"' + value.name.toString() + '"},';
         });
-
-        list = list.substring(0, list.length-1);
+        if(list.length > 1)
+            list = list.substring(0, list.length-1);
         list += ']';
         
         return list;
