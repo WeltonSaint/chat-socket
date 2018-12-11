@@ -14,6 +14,10 @@ angular.module("app", ['angular-nicescroll'])
     var fileSelect = document.createElement('input'), 
         fileSelectPrivate = document.createElement('input');;    
     
+    $scope.scrollToBottomShowing = false;
+    $scope.lastStateScrollToBottomShowing = false;
+    $scope.scrollToBottomPrivateShowing = false;
+    $scope.lastStateScrollToBottomPrivateShowing = false;
     $scope.messages = [];
     $scope.privateMessages = [[]];
     $scope.userList = [];
@@ -185,13 +189,57 @@ angular.module("app", ['angular-nicescroll'])
         });
 
         $scope.$apply();
-        updateScrolling();
+        updateScrollingPrivate();
     }
 
     $("#messagePrivateTo").on('change', function (e) {
         $scope.chattingWithUser = e.target.value;
         $scope.$apply();
-    });    
+    }); 
+    
+    $(".content-messages .messages").scroll(function() {
+        if($(this).scrollTop() + $(this).innerHeight() == $(this)[0].scrollHeight) { 
+            $('.scroll-bottom').addClass("fadeOutDown animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
+                $('.scroll-bottom').hide();                
+                $scope.lastStateScrollToBottomShowing = false;
+                $scope.scrollToBottomShowing = false;
+                $(this).removeClass("fadeOutDown animated");
+            }); 
+        } else {
+            $('.scroll-bottom').show();
+            $scope.lastStateScrollToBottomShowing = true;
+            if($scope.scrollToBottomShowing != $scope.lastStateScrollToBottomShowing){
+                $scope.scrollToBottomShowing = $scope.lastStateScrollToBottomShowing;         
+                $('.scroll-bottom').addClass("fadeInUp animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
+                    $(this).removeClass("fadeInUp animated");
+                });    
+            }
+        }
+    });
+
+    $(".content-messages-private .messages:not(.ng-hide)").on("scroll", function(e) {alert("scrolled visible");});
+    $(".content-messages-private .messages").on("scroll", function(e) {alert("scrolled");});
+
+    $(".content-messages-private .messages:not(.ng-hide)").scroll(function() {
+        console.log("teste");   
+        if($(this).scrollTop() + $(this).innerHeight() == $(this)[0].scrollHeight) { 
+            $('.scroll-bottom-private').addClass("fadeOutDown animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
+                $('.scroll-bottom-private').hide();                
+                $scope.lastStateScrollToBottomPrivateShowing= false;
+                $scope.scrollToBottomPrivateShowing = false;
+                $(this).removeClass("fadeOutDown animated");
+            }); 
+        } else {
+            $('.scroll-bottom-private').show();
+            $scope.lastStateScrollToBottomPrivateShowing = true;
+            if($scope.scrollToBottomPrivateShowing != $scope.lastStateScrollToBottomPrivateShowing){
+                $scope.scrollToBottomPrivateShowing = $scope.lastStateScrollToBottomPrivateShowing;         
+                $('.scroll-bottom-private').addClass("fadeInUp animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
+                    $(this).removeClass("fadeInUp animated");
+                });    
+            }
+        }
+    });
 
     $scope.sendImage = function sendImage() {
         fileSelect.click();
@@ -200,12 +248,12 @@ angular.module("app", ['angular-nicescroll'])
     fileSelect.onchange = function() {
         var f = fileSelect.files[0], r = new FileReader();
         r.onloadend = function(e) {
-            ws.send(JSON.stringify({
-                type  : SIMPLE_MESSAGE,
-                image : e.target.result
-            }));      
+            if(e.target.result)
+                ws.send(JSON.stringify({
+                    type  : SIMPLE_MESSAGE,
+                    image : e.target.result
+                }));      
         }
-
         r.readAsDataURL(f);
     };
 
@@ -217,22 +265,40 @@ angular.module("app", ['angular-nicescroll'])
     fileSelectPrivate.onchange = function() {
         var f = fileSelectPrivate.files[0], r = new FileReader();
         r.onloadend = function(e) {
-            let to = $("#messagePrivateTo").val();
-
-            ws.send(JSON.stringify({
-                type  : PRIVATE_MESSAGE,
-                to    : to,
-                image : e.target.result
-            }));       
+            if(e.target.result)
+                ws.send(JSON.stringify({
+                    type  : PRIVATE_MESSAGE,
+                    to    : $("#messagePrivateTo").val(),
+                    image : e.target.result
+                }));       
         }
 
         r.readAsDataURL(f);
     };
 
     function updateScrolling() {
-        var msgLog = $document[0].querySelector('#main-chat main');
-        msgLog.scrollTop = msgLog.scrollHeight;
+        if(!$scope.scrollToBottomShowing){
+            var msgLog = $document[0].querySelector('.content-messages .messages');
+            msgLog.scrollTop = msgLog.scrollHeight;
+        }
     }
+
+    function updateScrollingPrivate() {
+        if(!$scope.scrollToBottomPrivateShowing){
+            var msgLog = $document[0].querySelector('.content-messages-private .messages');
+            msgLog.scrollTop = msgLog.scrollHeight;
+        }
+    }
+
+    $scope.scrollToBottom = function scrollToBottom(){
+        var msgLog = $document[0].querySelector('.content-messages .messages');
+        msgLog.scrollTop = msgLog.scrollHeight;
+    };
+
+    $scope.scrollToBottomPrivate = function scrollToBottomPrivate(){
+        var msgLog = $document[0].querySelector('.content-messages-private .messages');
+        msgLog.scrollTop = msgLog.scrollHeight;
+    };
 
     $scope.populateUserList = function populateUserList(stringList) {
         var json = JSON.parse(stringList);
@@ -264,7 +330,6 @@ angular.module("app", ['angular-nicescroll'])
         $('select').material_select();
 
         if($scope.chattingWithUser != -1 && $scope.chattingWithUser != id)
-            console.log("era pra mudar remove");
             $("#messagePrivateTo").val($scope.chattingWithUser);
         
         $('select').material_select();

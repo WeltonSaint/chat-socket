@@ -100,6 +100,9 @@
                     </li>                          
                 </ul>  
             </main>
+            <div class="scroll-bottom">
+                <a ng-click="scrollToBottom();" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound"><i class="material-icons">keyboard_arrow_down</i></a>
+            </div>
             <div class="row colorPrimary" style="margin-bottom: 0;position:fixed;bottom:0;left:0;width:100%;">
                 <div class="col s9 m10 l11">
                     <div class="card colorBackground cardRounded wrapper-rounded wrapper-message">
@@ -127,7 +130,7 @@
                     </div>  
                 </div>
             </div>
-            <main>
+            <main class="content-messages-private">
                 <ul class="messages animated fade" ng-repeat="user in userList" ng-hide="chattingWithUser != user.userID">
                     <li data-ng-repeat="privateMessage in privateMessages[user.userID]">
                         <div class="card z-depth-3 message animated fadeIn" ng-style="{background : privateMessage.color}" ng-class="{me: privateMessage.author == userName}">
@@ -144,6 +147,9 @@
                     </li>  
                 </ul>
             </main>
+            <div class="scroll-bottom-private">
+                <a ng-click="scrollToBottomPrivate();" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound"><i class="material-icons">keyboard_arrow_down</i></a>
+            </div>
             <div class="row colorPrimary" style="margin-bottom: 0;position:fixed;bottom:0;left:0;width:100%;">
                 <div class="col s9 m10 l11">
                     <div class="card colorBackground cardRounded wrapper-rounded wrapper-message">
