@@ -27,6 +27,9 @@ html, body {
 .colorAccentBackgound{
 	background:#1DE9C3;
 }
+.spinner-colorAccent{
+	border-color:#1DE9C3;
+}
 .colorBackground{
 	background:#383838;
 }
@@ -60,11 +63,25 @@ html, body {
 .wrapper-message div {    
     display: inline-block;
 }
-.wrapper-message .input-field{
+.wrapper-message .input-field {
     width: calc(100% - 25px);
+    margin: 0.5rem 0.5rem;
+}
+.wrapper-message .input-field > * {
+    display: inline-block;
+}
+.wrapper-message .input-field div {
+    width: 100%;
+}
+.row .col .wrapper-message {
+    padding: 0.01rem 3rem 0.01rem 0rem;
 }
 .card .card-image .card-title {
     top: 0;
+}
+.emoji-items-wrap1 .tabs .tab a.active {
+    background-color: transparent;
+    color: #1DE9C3;
 }
 .card div .inputMessage {
     padding-left:  0;
@@ -84,7 +101,8 @@ html, body {
 .modal-content .row input[type=url]:focus:not([readonly]), .modal-content .row input[type=time]:focus:not([readonly]), 
 .modal-content .row input[type=date]:focus:not([readonly]), .modal-content .row input[type=datetime]:focus:not([readonly]), 
 .modal-content .row input[type=datetime-local]:focus:not([readonly]), .modal-content .row input[type=tel]:focus:not([readonly]), 
-.modal-content .row input[type=number]:focus:not([readonly]), .modal-content .row input[type=search]:focus:not([readonly]){
+.modal-content .row input[type=number]:focus:not([readonly]), .modal-content .row input[type=search]:focus:not([readonly]),
+.modal-content .row div[contenteditable="true"]:focus{
     border-bottom: 1px solid #1DE9C3;
     box-shadow: 0 1px 0 0 #1DE9C3; 
     color: white;   
@@ -94,7 +112,8 @@ html, body {
 .modal-content .row input[type=url]:focus:not([readonly])+label, .modal-content .row input[type=time]:focus:not([readonly])+label, 
 .modal-content .row input[type=date]:focus:not([readonly])+label, .modal-content .row input[type=datetime]:focus:not([readonly])+label, 
 .modal-content .row input[type=datetime-local]:focus:not([readonly])+label, .modal-content .row input[type=tel]:focus:not([readonly])+label, 
-.modal-content .row input[type=number]:focus:not([readonly])+label, .modal-content .row input[type=search]:focus:not([readonly])+label {
+.modal-content .row input[type=number]:focus:not([readonly])+label, .modal-content .row input[type=search]:focus:not([readonly])+label,
+.modal-content .row div[contenteditable="true"]+label {
     color: #1DE9C3;
 }
 .modal-content .row .input-field .prefix, 
@@ -114,7 +133,7 @@ html, body {
 .card div input[type=datetime]:not([readonly]), .card div input[type=datetime-local]:not([readonly]),
 .card div input[type=tel]:not([readonly]), .card div input[type=number]:not([readonly]), 
 .card div input[type=search]:not([readonly]), .card div textarea.materialize-textarea:not([readonly]),
-.card div .select-wrapper > * {
+.card div div[contenteditable="true"], .card div .select-wrapper > * {
     border-bottom: 1px solid transparent;
     box-shadow: 0 1px 0 0 transparent;
     color: white;
@@ -124,6 +143,9 @@ html, body {
 }
 .card .input-field  i {
     color: #BDBDBD;
+}
+.wrapper-rounded .btn-floating i {
+    color: white;
 }
 .card .card-image img {
     border-radius: 10px 10px 0 0;

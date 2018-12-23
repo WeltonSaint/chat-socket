@@ -31,7 +31,14 @@ angular.module("app", ['angular-nicescroll'])
     fileSelectPrivate.type = 'file';
     fileSelectPrivate.accept= 'image/*';
 
-    $('#modal-connect').modal({
+    window.emojiPicker = new EmojiPicker({
+        emojiable_selector: '[data-emojiable=true]',
+        assetsPath: 'static/img/',
+        popupButtonClasses: 'material-icons'
+    });
+    window.emojiPicker.discover();
+
+    $('.modal').modal({
         dismissible : false, // Modal can be dismissed by clicking outside of the modal
         opacity     : .5, // Opacity of modal background
         inDuration  : 300, // Transition in duration
@@ -63,16 +70,16 @@ angular.module("app", ['angular-nicescroll'])
                 $scope.privateMessages = [[]];
                 $scope.color = false;
                 $scope.connectionID = -1;  
-                $('#modal-connect').modal('open');
-                $('select').material_select(); 
-                $scope.$apply();
-
-                swal({
-                  title: "Warning",
-                  text: "Disconnected from WebSocket!",
-                  type: "warning",
-                  confirmButtonColor: "#4db6ac",
+                
+                $('#modal-error').modal('open');
+                $("#modal-error p").text("Disconnected from WebSocket!");
+                $("#okButttonError").click(function(){
+                    $('#modal-error').modal('close');
+                    $('#modal-connect').modal('open');
+                    $('select').material_select(); 
+                    $scope.$apply();
                 });
+
             }                  
         };
     }
@@ -89,29 +96,31 @@ angular.module("app", ['angular-nicescroll'])
                 $scope.color = json.data;
                 $scope.connectionID = json.id;
                 $scope.populateUserList(json.listUsers); 
+                $('#modal-loading').modal('close');
                 break;
-            case CONNECTION_REFUSED:
+            case CONNECTION_REFUSED:                
                 ws.close();       
+                $('#modal-loading').modal('close');
                 $scope.connected = false;          
                 $scope.messages = [];
                 $scope.userList = [];
                 $scope.privateMessages = [[]];
 
-                swal({
-                    title: "Error",
-                    text: "Exists a user with name \""+$scope.userName+"\"!",
-                    type: "error",
-                    confirmButtonColor: "#4db6ac",
-                }); 
+                $('#modal-error').modal('open');
+                $("#modal-error p").text("Exists a user with name \""+$scope.userName+"\"!");
+                $("#okButttonError").click(function(){
+                    $('#modal-error').modal('close');
+                    $scope.$apply();  
+                    $('#modal-connect').modal('open');
+                    $('select').material_select(); 
+                });
                  
                 $scope.userName = ''; 
                 $scope.color = false;
                 $scope.connectionID = -1;
 
                 setTimeout(function(){ 
-                    $scope.$apply();  
-                    $('#modal-connect').modal('open');
-                    $('select').material_select(); 
+                    
                 }, 1000);
                                         
                 break;
@@ -163,7 +172,7 @@ angular.module("app", ['angular-nicescroll'])
             author  : author,
             color   : color,
             image   : image,
-            content : message,
+            content : window.emojiPicker.unicodeAsImageToElement(message),
             time    : time
         });
 
@@ -184,7 +193,7 @@ angular.module("app", ['angular-nicescroll'])
             author  : author,
             color   : color,
             image   : image,
-            content : message,
+            content : window.emojiPicker.unicodeAsImageToElement(message),
             time    : time
         });
 
@@ -217,11 +226,7 @@ angular.module("app", ['angular-nicescroll'])
         }
     });
 
-    $(".content-messages-private .messages:not(.ng-hide)").on("scroll", function(e) {alert("scrolled visible");});
-    $(".content-messages-private .messages").on("scroll", function(e) {alert("scrolled");});
-
     $(".content-messages-private .messages:not(.ng-hide)").scroll(function() {
-        console.log("teste");   
         if($(this).scrollTop() + $(this).innerHeight() == $(this)[0].scrollHeight) { 
             $('.scroll-bottom-private').addClass("fadeOutDown animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
                 $('.scroll-bottom-private').hide();                
@@ -365,16 +370,17 @@ angular.module("app", ['angular-nicescroll'])
     
     $scope.connect = function connect(name) {
         if (!name) {
-            $('.modal-content input').addClass("invalid");
-            $('.modal-content input').prop("aria-invalid", "true");
+            $('#modal-connect .modal-content input').addClass("invalid");
+            $('#modal-connect .modal-content input').prop("aria-invalid", "true");
             return;
         }  
 
-        $('.modal').modal('close');
-        $('.modal-content input').removeClass("invalid");
-        $('.modal-content input').prop("aria-invalid", "false");
+        $('#modal-connect').modal('close');
+        $('#modal-loading').modal('open');
+        $('#modal-connect .modal-content input').removeClass("invalid");
+        $('#modal-connect .modal-content input').prop("aria-invalid", "false");
         $scope.userName = name;
-        $scope.connectChat();
+        $scope.connectChat();        
     };
 
     $scope.chattingWith = function chattingWith(name) {
@@ -385,6 +391,7 @@ angular.module("app", ['angular-nicescroll'])
     }
 
     $scope.sendMessage = function sendMessage(msg) {
+        msg = $("#message").val();   
         if (!msg) {
             return;
         }
@@ -393,10 +400,12 @@ angular.module("app", ['angular-nicescroll'])
             type    : SIMPLE_MESSAGE,
             message : msg
         }));
+        $('#message').parent().find('.emoji-wysiwyg-editor').html('')
     };
 
     $scope.sendMessagePrivate = function sendMessagePrivate(msg) {    
         let to = $("#messagePrivateTo").val();    
+        msg = $("#messagePrivate").val();    
         if (!msg || to == null) {            
             return;
         }
@@ -407,7 +416,7 @@ angular.module("app", ['angular-nicescroll'])
             message : msg
         }));
 
-        $scope.messagePrivate = "";
+        $("#messagePrivate").parent().find('.emoji-wysiwyg-editor').html('')
     };
 
     setInterval(function() {
@@ -429,5 +438,37 @@ angular.module("app", ['angular-nicescroll'])
             }
         });
     };
-});
+})
+.directive('contenteditable', ['$sce', function($sce) {
+    return {
+          restrict: "A",
+          require: "ngModel",
+          link: function(scope, element, attrs, ngModel) {
+  
+              function read() {
+                  ngModel.$setViewValue(element.html());
+              }
+              ngModel.$render = function() {
+                  element.html(ngModel.$viewValue || "");
+              };
+              element.bind("blur keyup change", function() {
+                  scope.$apply(read);
+              });
+  
+            element.on('keydown', function (event){
+                if(event.which == '13'){
+                    window.event.cancelBubble = true;
+                    event.returnValue = false;
+                    insertTextAtCursor('\n');
+                }
+            });
+  
+          }
+      };
+}])
+.filter('trustAsHtml', ['$sce', function($sce) {
+    return function(text) {
+      return $sce.trustAsHtml(text);
+    };
+}]);
 

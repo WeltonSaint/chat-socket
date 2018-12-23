@@ -17,11 +17,16 @@
         <script src="static/js/modernizr-2.8.3-respond-1.4.2.min.js"></script>
         <script src="static/js/index.js"></script>
         <script src="static/js/sweetalert.min.js"></script>
+        <script src="static/js/config.js"></script>
+        <script src="static/js/util.js"></script>
+        <script src="static/js/jquery.emojiarea.js"></script>
+        <script src="static/js/emoji-picker.js"></script>
         <link rel="stylesheet" href="static/css/normalize.css">   
         <link rel="stylesheet" href="static/css/animate.css">
         <link rel="stylesheet" href="static/css/materialize.min.css">
         <link rel="stylesheet" href="static/css/sweetalert.css">
         <link rel="stylesheet" href="static/css/index.css">  	
+        <link rel="stylesheet" href="static/css/emoji.css">
     </head>
     <body ng-controller="MainCtrl" ng-app="app" class="colorBackground">        
         <ul id="slide-out" class="side-nav colorBackground">
@@ -71,11 +76,40 @@
                 </div>
             </div>
             <div class="modal-footer colorBackground">          
-            <a href="javascript:void(0);" ng-click="connect(userName)" class="waves-effect waves-green btn-flat colorLabel">Join Chat</a>
-            <a href="javascript:window.history.back();" class="waves-effect waves-red btn-flat colorLabel">Cancel</a>
+            <a href="javascript:void(0);" ng-click="connect(userName)" class="waves-effect waves-green btn-flat colorAccent">Join Chat</a>
+            <a href="javascript:window.history.back();" class="waves-effect waves-red btn-flat colorAccent">Cancel</a>
             </div>
-        </div>    
-          
+        </div>         
+        <div id="modal-loading" class="modal colorBackground">
+            <div class="modal-content"> 
+                <div class="row">
+                    <div class="col s2">
+                        <div class="preloader-wrapper active">
+                            <div class="spinner-layer spinner-colorAccent">
+                                <div class="circle-clipper left">
+                                <div class="circle"></div>
+                                </div><div class="gap-patch">
+                                <div class="circle"></div>
+                                </div><div class="circle-clipper right">
+                                <div class="circle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s10">
+                        <p class="colorLabel">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="modal-error" class="modal colorBackground">
+            <div class="modal-content">
+                <p class="colorLabel"></p>
+            </div>
+            <div class="modal-footer colorBackground">          
+                <a id="okButttonError" href="javascript:void(0);" class="waves-effect btn-flat colorAccent" style="float: left;">OK</a>
+            </div>
+        </div> 
         <div class="row">
             <ul class="tabs colorPrimary">   
                 <li class="tab col s6 m6"><a class="waves-effect active" href="#main-chat">Main Chat</a></li>
@@ -93,7 +127,7 @@
                             </div>
                             <div class="card-content white-text">
                                 <span class="card-title" ng-hide="message.author == userName || message.content == null">{{message.author}}</span>
-                                <span>{{message.content}}</span>
+                                <span ng-bind-html="message.content|trustAsHtml"></span>
                                 <span class="time">{{message.time}}</span>                                                
                             </div>
                         </div>
@@ -107,7 +141,7 @@
                 <div class="col s9 m10 l11">
                     <div class="card colorBackground cardRounded wrapper-rounded wrapper-message">
                         <div class="input-field">
-                            <input id="message" ng-model="message" my-enter="sendMessage(message); message='';" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">                                
+                            <input id="message" ng-model="message" my-enter="sendMessage(message); message='';" data-emojiable="true" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">                                
                         </div>
                         <div>
                             <a ng-click="sendImage();" class="btn-floating btn-flat waves-effect waves-light center-align"><i class="material-icons">attach_file</i></a>
@@ -140,7 +174,7 @@
                             </div>
                             <div class="card-content white-text">
                                 <span class="card-title" ng-hide="privateMessage.author == userName || privateMessage.content == null">{{privateMessage.author}}</span>
-                                <p>{{privateMessage.content}}</p>
+                                <span ng-bind-html="privateMessage.content|trustAsHtml"></span>
                                 <span class="time">{{privateMessage.time}}</span>                                                
                             </div>
                         </div>
@@ -148,13 +182,13 @@
                 </ul>
             </main>
             <div class="scroll-bottom-private">
-                <a ng-click="scrollToBottomPrivate();" class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound"><i class="material-icons">keyboard_arrow_down</i></a>
+                <a ng-click="scrollToBottomPrivate();" class="btn-floating btn-large scale-transition waves-effect waves-light center-align colorAccentBackgound"><i class="material-icons">keyboard_arrow_down</i></a>
             </div>
             <div class="row colorPrimary" style="margin-bottom: 0;position:fixed;bottom:0;left:0;width:100%;">
                 <div class="col s9 m10 l11">
                     <div class="card colorBackground cardRounded wrapper-rounded wrapper-message">
                         <div class="input-field">
-                            <input id="messagePrivate" ng-model="messagePrivate" my-enter="sendMessagePrivate(messagePrivate);" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">                                
+                            <input id="messagePrivate" ng-model="messagePrivate" my-enter="sendMessagePrivate(messagePrivate);" data-emojiable="true" class="inputMessage colorLabel" type="text" required="" placeholder="Type a Message">                                
                         </div>
                         <div>
                             <a ng-click="sendImagePrivate();" class="btn-floating btn-flat waves-effect waves-light center-align"><i class="material-icons">attach_file</i></a>
@@ -163,7 +197,7 @@
                 </div>
                 <div>
                     <a ng-click="sendMessagePrivate(messagePrivate);"  class="btn-floating btn-large waves-effect waves-light center-align colorAccentBackgound btnSend"><i class="material-icons">send</i></a>
-                </div>
+                </div>                
             </div>
         </div>
     </body>
